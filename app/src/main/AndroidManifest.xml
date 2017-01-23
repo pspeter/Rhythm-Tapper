@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="sma.rhythmtapper">
 
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -17,12 +21,13 @@
         </activity>
         <activity android:name=".DifficultySelectionActivity"
             android:screenOrientation="portrait"/>
-        <activity android:name=".HighscoreActivity"
-            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".HighscoreActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".GameActivity"
             android:label="@string/title_activity_game"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>
