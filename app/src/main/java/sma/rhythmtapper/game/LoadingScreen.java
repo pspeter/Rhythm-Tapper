@@ -18,7 +18,7 @@ public class LoadingScreen extends Screen {
     public void update(float deltaTime) {
         Graphics g = game.getGraphics();
         Assets.background = g.newImage("background_placeholder.jpg", Graphics.ImageFormat.RGB565);
-        Assets.ball = g.newImage("ball_placeholder.jpg", Graphics.ImageFormat.RGB565);
+        Assets.ball = g.newImage("ball_placeholder.png", Graphics.ImageFormat.RGB565);
         Assets.click = game.getAudio().createSound("guiclick.ogg");
         game.setScreen(new GameScreen(game));
     }
