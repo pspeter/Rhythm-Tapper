@@ -35,7 +35,7 @@ public class HighscoreActivity extends Activity {
 
         // TEST: add new value every time activity gets started
         SharedPreferences.Editor edit = _prefs.edit();
-        edit.putString(new , "1000");
+        edit.putString(new Date().toString(), "1000");
         edit.commit();
 
         // iterate through all prefs
