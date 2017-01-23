@@ -1,9 +1,9 @@
 package sma.rhythmtapper;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
 import android.os.Bundle;
 
-public class DifficultySelectionActivity extends AppCompatActivity {
+public class DifficultySelectionActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
