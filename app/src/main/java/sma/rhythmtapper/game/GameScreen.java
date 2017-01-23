@@ -17,8 +17,8 @@ public class GameScreen extends Screen {
     enum GameState {
         Ready, Running, Paused, GameOver
     }
-    private static final int GAME_HEIGHT = 1920;
-    private static final int GAME_WIDTH = 1080;
+    private int _gameHeight;
+    private int _gameWidth;
 
     GameState state = GameState.Ready;
 
@@ -39,6 +39,8 @@ public class GameScreen extends Screen {
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setAntiAlias(true);
         paint.setColor(Color.WHITE);
+        _gameHeight = game.getGraphics().getHeight();
+        _gameWidth = game.getGraphics().getWidth();
         game.getGraphics().drawString("helloo", 30, 30, paint);
         Log.d(TAG, "ctor gamescreen");
     }
@@ -87,12 +89,12 @@ public class GameScreen extends Screen {
             if (event.type == TouchEvent.TOUCH_DOWN) {
 
                 Log.d(TAG, "x: " + event.x);
-                if (event.x < GAME_WIDTH / 3) {
+                if (event.x < _gameWidth / 3) {
 
                     Log.d(TAG, "left");
                 }
 
-                else if (event.x < GAME_WIDTH / 3 * 2) {
+                else if (event.x < _gameHeight / 3 * 2) {
                     Log.d(TAG, "middle");
                 }
                 else {
