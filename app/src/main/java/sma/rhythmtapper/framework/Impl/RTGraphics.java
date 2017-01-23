@@ -73,7 +73,7 @@ public class RTGraphics implements Graphics {
         else
             format = ImageFormat.ARGB8888;
 
-        return new AndroidImage(bitmap, format);
+        return new RTImage(bitmap, format);
     }
 
     @Override
@@ -123,13 +123,13 @@ public class RTGraphics implements Graphics {
         dstRect.right = x + srcWidth;
         dstRect.bottom = y + srcHeight;
 
-        canvas.drawBitmap(((AndroidImage) Image).bitmap, srcRect, dstRect,
+        canvas.drawBitmap(((RTImage) Image).bitmap, srcRect, dstRect,
                 null);
     }
 
     @Override
     public void drawImage(Image Image, int x, int y) {
-        canvas.drawBitmap(((AndroidImage)Image).bitmap, x, y, null);
+        canvas.drawBitmap(((RTImage)Image).bitmap, x, y, null);
     }
 
     public void drawScaledImage(Image Image, int x, int y, int width, int height, int srcX, int srcY, int srcWidth, int srcHeight){
@@ -148,7 +148,7 @@ public class RTGraphics implements Graphics {
 
 
 
-        canvas.drawBitmap(((AndroidImage) Image).bitmap, srcRect, dstRect, null);
+        canvas.drawBitmap(((RTImage) Image).bitmap, srcRect, dstRect, null);
 
     }
 
