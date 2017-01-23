@@ -14,6 +14,7 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Rect;
 
+import sma.rhythmtapper.R;
 import sma.rhythmtapper.framework.Graphics;
 import sma.rhythmtapper.framework.Image;
 
@@ -105,8 +106,6 @@ public class RTGraphics implements Graphics {
     @Override
     public void drawString(String text, int x, int y, Paint paint){
         canvas.drawText(text, x, y, paint);
-
-
     }
 
 
@@ -116,7 +115,6 @@ public class RTGraphics implements Graphics {
         srcRect.top = srcY;
         srcRect.right = srcX + srcWidth;
         srcRect.bottom = srcY + srcHeight;
-
 
         dstRect.left = x;
         dstRect.top = y;

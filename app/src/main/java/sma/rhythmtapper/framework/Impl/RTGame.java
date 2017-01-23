@@ -59,33 +59,59 @@ public class RTGame extends Activity implements Game {
     }
 
     @Override
-    public Audio getAudio() {
-        return null;
+    public void onResume() {
+        super.onResume();
+        wakeLock.acquire();
+        screen.resume();
+        renderView.resume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        wakeLock.release();
+        renderView.pause();
+        screen.pause();
+
+        if (isFinishing())
+            screen.dispose();
     }
 
     @Override
     public Input getInput() {
-        return null;
+        return input;
     }
 
     @Override
     public FileIO getFileIO() {
-        return null;
+        return fileIO;
     }
 
     @Override
     public Graphics getGraphics() {
-        return null;
+        return graphics;
+    }
+
+    @Override
+    public Audio getAudio() {
+        return audio;
     }
 
     @Override
     public void setScreen(Screen screen) {
+        if (screen == null)
+            throw new IllegalArgumentException("Screen must not be null");
 
+        this.screen.pause();
+        this.screen.dispose();
+        screen.resume();
+        screen.update(0);
+        this.screen = screen;
     }
 
     @Override
     public Screen getCurrentScreen() {
-        return null;
+        return screen;
     }
 
     @Override
