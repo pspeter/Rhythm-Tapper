@@ -36,8 +36,8 @@ public class RTGame extends Activity implements Game {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         boolean isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
-        int frameBufferWidth = 800;
-        int frameBufferHeight = 1280;
+        int frameBufferWidth = 1080;
+        int frameBufferHeight = 1920;
         Bitmap frameBuffer = Bitmap.createBitmap(frameBufferWidth,
                 frameBufferHeight, Bitmap.Config.RGB_565);
 

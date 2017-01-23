@@ -17,6 +17,8 @@ public class GameScreen extends Screen {
     enum GameState {
         Ready, Running, Paused, GameOver
     }
+    private static final int GAME_HEIGHT = 1920;
+    private static final int GAME_WIDTH = 1080;
 
     GameState state = GameState.Ready;
 
@@ -78,33 +80,26 @@ public class GameScreen extends Screen {
 
         // 1. All touch input is handled here:
         int len = touchEvents.size();
+
         for (int i = 0; i < len; i++) {
             TouchEvent event = touchEvents.get(i);
 
             if (event.type == TouchEvent.TOUCH_DOWN) {
 
-                if (event.x < 640) {
-                    // Move left.
+                Log.d(TAG, "x: " + event.x);
+                if (event.x < GAME_WIDTH / 3) {
+
+                    Log.d(TAG, "left");
                 }
 
-                else if (event.x > 640) {
-                    // Move right.
+                else if (event.x < GAME_WIDTH / 3 * 2) {
+                    Log.d(TAG, "middle");
+                }
+                else {
+                    Log.d(TAG, "right");
                 }
 
             }
-
-            if (event.type == TouchEvent.TOUCH_UP) {
-
-                if (event.x < 640) {
-                    // Stop moving left.
-                }
-
-                else if (event.x > 640) {
-                    // Stop moving right. }
-                }
-            }
-
-
         }
 
         // 2. Check miscellaneous events like death:
@@ -152,7 +147,7 @@ public class GameScreen extends Screen {
         // First draw the game elements.
 
         // Example:
-        g.drawImage(Assets.background, 0, 0);
+        g.drawImage(Assets.background, 0, 0, 0, 0, Assets.background.getWidth(), Assets.background.getHeight());
         // g.drawImage(Assets.character, characterX, characterY);
 
         // Secondly, draw the UI above the game elements.
