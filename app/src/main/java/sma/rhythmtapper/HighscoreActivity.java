@@ -32,8 +32,11 @@ public class HighscoreActivity extends Activity {
 
         // load highscores
         _prefs = getSharedPreferences(PREF_FILE, 0);
-        // SharedPreferences.Editor edit = settings.edit();
 
+        // TEST: add new value every time activity gets started
+        SharedPreferences.Editor edit = _prefs.edit();
+        edit.putString(new , "1000");
+        edit.commit();
 
         // iterate through all prefs
         Map<String, ?> keys = _prefs.getAll();

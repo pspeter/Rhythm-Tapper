@@ -27,12 +27,12 @@ public class HighscoreAdapter extends ArrayAdapter<Highscore> {
         }
 
         // Lookup view for data population
-        TextView tvName = (TextView) convertView.findViewById(R.id.text_date);
-        TextView tvHome = (TextView) convertView.findViewById(R.id.text_score);
+        TextView textDate = (TextView) convertView.findViewById(R.id.text_date);
+        TextView textScore = (TextView) convertView.findViewById(R.id.text_score);
 
         // Populate the data into the template view using the data object
-        tvName.setText(score.getDate().toString());
-        tvHome.setText(score.getScore());
+        textDate.setText(score.getDate());
+        textScore.setText(String.valueOf(score.getScore()));
         // Return the completed view to render on screen
         return convertView;
     }
