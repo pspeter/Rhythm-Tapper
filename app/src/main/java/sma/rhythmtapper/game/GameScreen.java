@@ -94,7 +94,7 @@ public class GameScreen extends Screen {
                     Log.d(TAG, "left");
                 }
 
-                else if (event.x < _gameHeight / 3 * 2) {
+                else if (event.x < _gameWidth / 3 * 2) {
                     Log.d(TAG, "middle");
                 }
                 else {
