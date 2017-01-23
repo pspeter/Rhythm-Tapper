@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.util.Log;
+import android.util.StringBuilderPrinter;
 
 import sma.rhythmtapper.framework.Game;
 import sma.rhythmtapper.framework.Graphics;
@@ -29,13 +30,18 @@ public class GameScreen extends Screen {
     private List<Point> _points;
     private Random _rand;
     private int _tick;
+    private int _lifes;
+
+    private final double _spawnChance = 0.20;
+    private final int _spawnInterval = 10;
+    private final int _pointSpeed = 20;
 
     GameState state = GameState.Ready;
 
     // Variable Setup
     // You would create game objects here.
 
-    private Paint paint;
+    private Paint _paint;
 
     public GameScreen(Game game) {
         super(game);
@@ -49,13 +55,14 @@ public class GameScreen extends Screen {
         _points = new ArrayList<>();
         _rand = new Random(42);
         _tick = 0;
+        _lifes = 10;
 
         // Defining a paint object
-        paint = new Paint();
-        paint.setTextSize(30);
-        paint.setTextAlign(Paint.Align.CENTER);
-        paint.setAntiAlias(true);
-        paint.setColor(Color.WHITE);
+        _paint = new Paint();
+        _paint.setTextSize(30);
+        _paint.setTextAlign(Paint.Align.CENTER);
+        _paint.setAntiAlias(true);
+        _paint.setColor(Color.WHITE);
     }
 
     @Override
@@ -102,14 +109,20 @@ public class GameScreen extends Screen {
             TouchEvent event = touchEvents.get(i);
 
             if (event.type == TouchEvent.TOUCH_DOWN) {
-                if (event.x < _gameWidth / 3) {
-                    hitLane(0, _gameWidth / 3);
-                }
-                else if (event.x < _gameWidth / 3 * 2) {
-                    hitLane(_gameWidth / 3, _gameWidth / 3 * 2);
+                if (event.y > 1500) {
+                    if (event.x < _gameWidth / 3) {
+                        hitLane(0, _gameWidth / 3);
+                    }
+                    else if (event.x < _gameWidth / 3 * 2) {
+                        hitLane(_gameWidth / 3, _gameWidth / 3 * 2); // TODO triggers on every game start
+                    }
+                    else {
+                        hitLane(_gameWidth / 3 * 2, _gameWidth);
+                    }
                 }
                 else {
-                    hitLane(_gameWidth / 3 * 2, _gameWidth);
+                    touchEvents.remove(i);
+                    pause();
                 }
             }
         }
@@ -120,7 +133,7 @@ public class GameScreen extends Screen {
             if (p.y > 1880) {
                 iter.remove();
                 Log.d(TAG, "point missed");
-                // TODO Success
+                onMiss();
             }
         }
 
@@ -135,7 +148,7 @@ public class GameScreen extends Screen {
         // This is where all the game updates happen.
         // For example, robot.update();
 
-        _tick = (_tick + 1) % 30;
+        _tick = (_tick + 1) % _spawnInterval;
     }
 
     private void hitLane(int from, int to) {
@@ -144,35 +157,66 @@ public class GameScreen extends Screen {
         while (iter.hasNext()) {
             Point p = iter.next();
             if (p.x > from && p.x < to) {
-                if (p.y > 1750) {
+                if (p.y > 1650) {
                     iter.remove();
                     hasHit = true;
                     Log.d(TAG, "point hit");
-                    // TODO failure
+                    onHit();
                 }
             }
         }
         if (!hasHit) {
             Log.d(TAG, "no point pressed");
-            // TODO failure
+            onMiss();
         }
+    }
+
+    private void onMiss() {
+        _streak = 0;
+        _score -= Math.min(_score, 50);
+        _multiplier = 1;
+        --_lifes;
+        if (_lifes == 0) {
+            state = GameState.GameOver;
+        }
+    }
+
+    private void onHit() {
+        _streak++;
+        if (_streak > 80) {
+            _multiplier = 10;
+        }
+        else if (_streak > 40) {
+            _multiplier = 5;
+        }
+        else if (_streak > 30) {
+            _multiplier = 4;
+        }
+        else if (_streak > 20) {
+            _multiplier = 3;
+        }
+        else if (_streak > 10) {
+            _multiplier = 2;
+        }
+
+        _score += 10 * _multiplier;
     }
 
     private void movePoints() {
         for(Point p: _points) {
-            p.y += 10;
+            p.y += _pointSpeed;
         }
     }
 
     private void spawnPoints() {
         if (_tick == 0) {
-            if (_rand.nextFloat() < 0.4) {
+            if (_rand.nextFloat() < _spawnChance) {
                 _points.add(new Point(_gameWidth / 3 / 2, 50));
             }
-            if (_rand.nextFloat() < 0.4) {
+            if (_rand.nextFloat() < _spawnChance) {
                 _points.add(new Point(_gameWidth / 2, 50));
             }
-            if (_rand.nextFloat() < 0.4) {
+            if (_rand.nextFloat() < _spawnChance) {
                 _points.add(new Point(_gameWidth - _gameWidth / 3 / 2, 50));
             }
         }
@@ -182,7 +226,7 @@ public class GameScreen extends Screen {
         int len = touchEvents.size();
         for (int i = 0; i < len; i++) {
             TouchEvent event = touchEvents.get(i);
-            if (event.type == TouchEvent.TOUCH_UP) {
+            if (event.type == TouchEvent.TOUCH_DOWN) {
                 resume();
             }
         }
@@ -234,7 +278,7 @@ public class GameScreen extends Screen {
 
         // Set all variables to null. You will be recreating them in the
         // constructor.
-        paint = null;
+        _paint = null;
 
         // Call garbage collector to clean up memory.
         System.gc();
@@ -244,27 +288,33 @@ public class GameScreen extends Screen {
         Graphics g = game.getGraphics();
 
         g.drawARGB(155, 0, 0, 0);
-        g.drawString(Integer.toString(_score), 640, 300, paint);
+        g.drawString(Integer.toString(_score), 640, 300, _paint);
 
     }
 
     private void drawRunningUI() {
         Graphics g = game.getGraphics();
+        g.drawRect(0, 0, _gameWidth, 100, Color.BLACK);
 
+        StringBuilder sb = new StringBuilder();
+        sb.append("Score: ").append(_score)
+                .append(" Multiplier: ").append(_multiplier).append("x")
+                .append(" Lifes remaining: ").append(_lifes);
+        g.drawString(sb.toString(), 600, 80, _paint);
     }
 
     private void drawPausedUI() {
         Graphics g = game.getGraphics();
         // Darken the entire screen so you can display the Paused screen.
         g.drawARGB(155, 0, 0, 0);
-
+        
     }
 
     private void drawGameOverUI() {
         Graphics g = game.getGraphics();
         g.drawRect(0, 0, 1281, 801, Color.BLACK);
-        g.drawString("GAME OVER.", 640, 300, paint);
-
+        g.drawString("GAME OVER.", 640, 300, _paint);
+        g.drawString("FINAL SCORE: " + _score, 640, 600, _paint);
     }
 
     @Override
