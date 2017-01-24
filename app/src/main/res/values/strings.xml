@@ -9,4 +9,11 @@
     <string name="diff_radio_easy">Easy</string>
     <string name="diff_radio_mid">Medium</string>
     <string name="diff_radio_hard">Harrrrrrd</string>
+
+    <string name="highscore_mode">Mode</string>
+    <string name="highscore_score">Score</string>
+    <string name="highscore_date">Date</string>
+    <string name="highscore_txt_easy">Easy</string>
+    <string name="highscore_txt_mid">Medium</string>
+    <string name="highscore_txt_hard">Hard</string>
 </resources>
