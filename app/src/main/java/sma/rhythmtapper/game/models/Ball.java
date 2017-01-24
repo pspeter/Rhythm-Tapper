@@ -18,7 +18,7 @@ public class Ball {
         this.x = x;
         this.y = y;
         this.type = type;
-        this.speedMultiplier = type == BallType.Speeder ? 2 : 1;
+        this.speedMultiplier = type == BallType.Speeder ? 1.4 : 1;
     }
 
     public void update(int speed) {
