@@ -34,6 +34,9 @@ public class GameScreen extends Screen {
     private Random _rand;
     private int _tick;
     private int _lifes;
+    private int _laneHitAlphaLeft;
+    private int _laneHitAlphaMiddle;
+    private int _laneHitAlphaRight;
 
     private final double _spawnChance_normal = 0.17;
     private final double _spawnChance_oneup = _spawnChance_normal + 0.005;
@@ -41,13 +44,14 @@ public class GameScreen extends Screen {
     private final int _ballSpeed = 20;
     private static final int HITBOX_TOP = 1620;
     private static final int HITBOX_BOTTOM = 1900;
+    private static final int MISS_FLASH_INITIAL_ALPHA = 240;
 
     GameState state = GameState.Ready;
 
     // Variable Setup
     // You would create game objects here.
 
-    private Paint _paint;
+    private Paint _paintText;
 
     public GameScreen(Game game) {
         super(game);
@@ -64,13 +68,16 @@ public class GameScreen extends Screen {
         _rand = new Random(42);
         _tick = 0;
         _lifes = 10;
+        _laneHitAlphaLeft = 0;
+        _laneHitAlphaMiddle = 0;
+        _laneHitAlphaRight = 0;
 
         // Defining a paint object
-        _paint = new Paint();
-        _paint.setTextSize(30);
-        _paint.setTextAlign(Paint.Align.CENTER);
-        _paint.setAntiAlias(true);
-        _paint.setColor(Color.WHITE);
+        _paintText = new Paint();
+        _paintText.setTextSize(30);
+        _paintText.setTextAlign(Paint.Align.CENTER);
+        _paintText.setAntiAlias(true);
+        _paintText.setColor(Color.WHITE);
     }
 
     @Override
@@ -100,7 +107,7 @@ public class GameScreen extends Screen {
         // Now the updateRunning() method will be called!
 
         if (touchEvents.size() > 0)
-            state = GameState.Running;
+            state = GameState.Running; // TODO triggers pause on every game start
     }
 
     private void updateRunning(List<TouchEvent> touchEvents, float deltaTime) {
@@ -115,14 +122,21 @@ public class GameScreen extends Screen {
                 if (event.y > 1500) {
                     // ball hit area
                     if (event.x < _gameWidth / 3) {
-                        hitLane(_ballsLeft.iterator());
+                        if (!hitLane(_ballsLeft.iterator())) {
+                            // if no ball was hit
+                            _laneHitAlphaLeft = MISS_FLASH_INITIAL_ALPHA;
+                        }
                     }
                     else if (event.x < _gameWidth / 3 * 2) {
-
-                        hitLane(_ballsMiddle.iterator()); // TODO triggers on every game start
+                        if (!hitLane(_ballsMiddle.iterator()))
+                        {
+                            _laneHitAlphaMiddle = MISS_FLASH_INITIAL_ALPHA;
+                        }
                     }
                     else {
-                        hitLane(_ballsRight.iterator());
+                        if (!hitLane(_ballsRight.iterator())) {
+                            _laneHitAlphaRight = MISS_FLASH_INITIAL_ALPHA;
+                        }
                     }
                 }
                 else {
@@ -135,7 +149,7 @@ public class GameScreen extends Screen {
 
         // 2. Check miscellaneous events like death:
 
-        if (_lifes == 0) {
+        if (_lifes <= 0) {
             state = GameState.GameOver;
         }
 
@@ -144,41 +158,59 @@ public class GameScreen extends Screen {
         // For example, robot.update();
 
         // update ball position
-        for (Ball b: _ballsLeft)
+        for (Ball b: _ballsLeft) {
             b.update();
+        }
 
-        for (Ball b: _ballsMiddle)
+        for (Ball b: _ballsMiddle) {
             b.update();
+        }
 
-        for (Ball b: _ballsRight)
+        for (Ball b: _ballsRight) {
             b.update();
+        }
 
         // remove missed balls
-        removeMissed(_ballsLeft.iterator());
-        removeMissed(_ballsMiddle.iterator());
-        removeMissed(_ballsRight.iterator());
+        if (removeMissed(_ballsLeft.iterator())) {
+            _laneHitAlphaLeft = MISS_FLASH_INITIAL_ALPHA;
+        }
+
+        if (removeMissed(_ballsMiddle.iterator())) {
+            _laneHitAlphaMiddle = MISS_FLASH_INITIAL_ALPHA;
+        }
+
+        if (removeMissed(_ballsRight.iterator())) {
+            _laneHitAlphaRight = MISS_FLASH_INITIAL_ALPHA;
+        }
 
         // spawn new balls
         if (_tick == 0) {
             spawnPoints();
         }
 
+        // decrease miss flash intensities
+        _laneHitAlphaLeft -= Math.min(_laneHitAlphaLeft, 10);
+        _laneHitAlphaMiddle -= Math.min(_laneHitAlphaMiddle, 10);
+        _laneHitAlphaRight -= Math.min(_laneHitAlphaRight, 10);
+
         // update spawntime ticker
         _tick = (_tick + 1) % _spawnInterval;
     }
 
-    private void removeMissed(Iterator<Ball> iterator) {
+    private boolean removeMissed(Iterator<Ball> iterator) {
         while (iterator.hasNext()) {
             Ball b = iterator.next();
             if (b.y > HITBOX_BOTTOM) {
                 iterator.remove();
                 Log.d(TAG, "fail press");
                 onMiss();
+                return true;
             }
         }
+        return false;
     }
 
-    private void hitLane(Iterator<Ball> iter) {
+    private boolean hitLane(Iterator<Ball> iter) {
         boolean hasHit = false;
         while (iter.hasNext()) {
             Ball b = iter.next();
@@ -197,6 +229,7 @@ public class GameScreen extends Screen {
             Log.d(TAG, "point missed");
             onMiss();
         }
+        return hasHit;
     }
 
     private void onMiss() {
@@ -282,6 +315,9 @@ public class GameScreen extends Screen {
 
         // Example:
         g.drawImage(Assets.background, 0, 0);
+        g.drawRect(0                 , 0, _gameWidth / 3 + 1, _gameHeight, Color.argb(_laneHitAlphaLeft, 255, 0, 0));
+        g.drawRect(_gameWidth / 3    , 0, _gameWidth / 3 + 1, _gameHeight, Color.argb(_laneHitAlphaMiddle, 255, 0, 0));
+        g.drawRect(_gameWidth / 3 * 2, 0, _gameWidth / 3 + 1, _gameHeight, Color.argb(_laneHitAlphaRight, 255, 0, 0));
         // g.drawImage(Assets.character, characterX, characterY);
 
         for (Ball b: _ballsLeft) {
@@ -323,7 +359,7 @@ public class GameScreen extends Screen {
 
         // Set all variables to null. You will be recreating them in the
         // constructor.
-        _paint = null;
+        _paintText = null;
 
         // Call garbage collector to clean up memory.
         System.gc();
@@ -333,7 +369,7 @@ public class GameScreen extends Screen {
         Graphics g = game.getGraphics();
 
         g.drawARGB(155, 0, 0, 0);
-        g.drawString(Integer.toString(_score), 640, 300, _paint);
+        g.drawString(Integer.toString(_score), 640, 300, _paintText);
 
     }
 
@@ -345,7 +381,7 @@ public class GameScreen extends Screen {
         sb.append("Score: ").append(_score)
                 .append(" Multiplier: ").append(_multiplier).append("x")
                 .append(" Lifes remaining: ").append(_lifes);
-        g.drawString(sb.toString(), 600, 80, _paint);
+        g.drawString(sb.toString(), 600, 80, _paintText);
     }
 
     private void drawPausedUI() {
@@ -358,8 +394,8 @@ public class GameScreen extends Screen {
     private void drawGameOverUI() {
         Graphics g = game.getGraphics();
         g.drawRect(0, 0, 1281, 801, Color.BLACK);
-        g.drawString("GAME OVER.", 640, 300, _paint);
-        g.drawString("FINAL SCORE: " + _score, 640, 600, _paint);
+        g.drawString("GAME OVER.", 640, 300, _paintText);
+        g.drawString("FINAL SCORE: " + _score, 640, 600, _paintText);
     }
 
     @Override
