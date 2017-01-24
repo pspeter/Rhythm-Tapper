@@ -24,7 +24,7 @@ public class MainActivity extends Activity {
         this._startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(MainActivity.this, GameActivity.class);
+                Intent i = new Intent(MainActivity.this, DifficultySelectionActivity.class);
                 MainActivity.this.startActivity(i);
             }
         });

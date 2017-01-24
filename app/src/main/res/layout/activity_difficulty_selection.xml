@@ -10,4 +10,31 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="sma.rhythmtapper.DifficultySelectionActivity">
 
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <Button
+            android:text="@string/diff_radio_easy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/diff_btn_easy"
+            android:layout_weight="1" />
+
+        <Button
+            android:text="@string/diff_radio_mid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/diff_btn_mid"
+            android:layout_weight="1" />
+
+        <Button
+            android:text="@string/diff_radio_hard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/diff_btn_hard"
+            android:layout_weight="1" />
+
+    </LinearLayout>
 </RelativeLayout>
