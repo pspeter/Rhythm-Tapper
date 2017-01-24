@@ -39,6 +39,8 @@ public class GameScreen extends Screen {
     private final double _spawnChance_oneup = _spawnChance_normal + 0.005;
     private final int _spawnInterval = 10;
     private final int _ballSpeed = 20;
+    private static final int HITBOX_TOP = 1620;
+    private static final int HITBOX_BOTTOM = 1900;
 
     GameState state = GameState.Ready;
 
@@ -168,7 +170,7 @@ public class GameScreen extends Screen {
     private void removeMissed(Iterator<Ball> iterator) {
         while (iterator.hasNext()) {
             Ball b = iterator.next();
-            if (b.y > 1880) {
+            if (b.y > HITBOX_BOTTOM) {
                 iterator.remove();
                 Log.d(TAG, "fail press");
                 onMiss();
@@ -180,7 +182,7 @@ public class GameScreen extends Screen {
         boolean hasHit = false;
         while (iter.hasNext()) {
             Ball b = iter.next();
-            if (b.y > 1650) {
+            if (b.y > HITBOX_TOP) {
                 if (b.type == Ball.BallType.OneUp) {
                     ++_lifes;
                 }
