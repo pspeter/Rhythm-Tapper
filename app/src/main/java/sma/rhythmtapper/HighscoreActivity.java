@@ -7,6 +7,9 @@ import android.text.format.DateFormat;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 import java.text.ParseException;
 
@@ -23,38 +26,35 @@ public class HighscoreActivity extends Activity {
     private SharedPreferences _prefs;
 
     /* views */
-    private ListView _highscoreView;
-    private ArrayAdapter<Highscore> _adapter;
-    private ArrayList<Highscore> _arrayOfScores = new ArrayList<Highscore>();
+    //private ListView _highscoreView;
+    //private ArrayAdapter<Highscore> _adapter;
+    //private ArrayList<Highscore> _arrayOfScores = new ArrayList<Highscore>();
+
+    private TextView _easyTxtView;
+    private TextView _medTxtView;
+    private TextView _hardTxtView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_highscore);
-        _highscoreView = (ListView)this.findViewById(R.id.highscore_list_view);
+        //_highscoreView = (ListView)this.findViewById(R.id.highscore_list_view);
+
+        _easyTxtView = (TextView)this.findViewById(R.id.highscore_txt_score_easy);
+        _medTxtView = (TextView)this.findViewById(R.id.highscore_txt_score_medium);
+        _hardTxtView = (TextView)this.findViewById(R.id.highscore_txt_score_hard);
 
         // load highscores
         _prefs = getSharedPreferences(PREF_FILE, 0);
 
+        String easyMode = _prefs.getString("easy", "0");
+        String mediumMode = _prefs.getString("medium", "0");
+        String hardMode = _prefs.getString("hard", "0");
 
-        // TEST: add new value every time activity gets started
-        CharSequence dateString = DateFormat.format("dd.MM.yyyy, hh:mm", new Date());
-        SharedPreferences.Editor edit = _prefs.edit();
-        edit.putString(dateString.toString(), "1000");
-        edit.commit();
+        _easyTxtView.setText(easyMode);
+        _medTxtView.setText(mediumMode);
+        _hardTxtView.setText(hardMode);
 
 
-
-
-        // iterate through all prefs
-        Map<String, ?> keys = _prefs.getAll();
-        for(Map.Entry<String,?> entry : keys.entrySet()){
-            Log.d("map values",entry.getKey() + ": " +
-                    entry.getValue());
-            this._arrayOfScores.add(new Highscore(entry.getKey(), Integer.parseInt(entry.getValue().toString())));
-        }
-        HighscoreAdapter adapter = new HighscoreAdapter(this, this._arrayOfScores);
-
-        this._highscoreView.setAdapter(adapter);
     }
 }
