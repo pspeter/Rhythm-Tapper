@@ -111,6 +111,7 @@ public class GameScreen extends Screen {
 
             if (event.type == TouchEvent.TOUCH_DOWN) {
                 if (event.y > 1500) {
+                    // ball hit area
                     if (event.x < _gameWidth / 3) {
                         hitLane(_ballsLeft.iterator());
                     }
@@ -123,15 +124,12 @@ public class GameScreen extends Screen {
                     }
                 }
                 else {
+                    // pause area
                     touchEvents.remove(i);
                     pause();
                 }
             }
         }
-
-        removeMissed(_ballsLeft.iterator());
-        removeMissed(_ballsMiddle.iterator());
-        removeMissed(_ballsRight.iterator());
 
         // 2. Check miscellaneous events like death:
 
@@ -152,6 +150,11 @@ public class GameScreen extends Screen {
 
         for (Ball b: _ballsRight)
             b.update();
+
+        // remove missed balls
+        removeMissed(_ballsLeft.iterator());
+        removeMissed(_ballsMiddle.iterator());
+        removeMissed(_ballsRight.iterator());
 
         // spawn new balls
         if (_tick == 0) {
@@ -185,7 +188,7 @@ public class GameScreen extends Screen {
                 hasHit = true;
                 Log.d(TAG, "point hit");
                 onHit();
-                break;
+                break; // only hit & remove the first one
             }
         }
         if (!hasHit) {
@@ -280,14 +283,15 @@ public class GameScreen extends Screen {
         // g.drawImage(Assets.character, characterX, characterY);
 
         for (Ball b: _ballsLeft) {
-            switch(b.type) {
-                case Normal:
-                    g.drawImage(Assets.ballNormal, b.x - 90, b.y - 90);
-                    break;
-                case OneUp:
-                    g.drawImage(Assets.ballOneUp, b.x - 90, b.y - 90);
-                    break;
-            }
+            paintBall(g, b, deltaTime);
+        }
+
+        for (Ball b: _ballsMiddle) {
+            paintBall(g, b, deltaTime);
+        }
+
+        for (Ball b: _ballsRight) {
+            paintBall(g, b, deltaTime);
         }
 
         // Secondly, draw the UI above the game elements.
@@ -300,6 +304,17 @@ public class GameScreen extends Screen {
         if (state == GameState.GameOver)
             drawGameOverUI();
 
+    }
+
+    private void paintBall(Graphics g, Ball b, float deltaTime) {
+        switch(b.type) {
+            case Normal:
+                g.drawImage(Assets.ballNormal, b.x - 90, b.y - 90); // TODO deltatime for framerate independent movement(?)
+                break;
+            case OneUp:
+                g.drawImage(Assets.ballOneUp, b.x - 90, b.y - 90);
+                break;
+        }
     }
 
     private void nullify() {
