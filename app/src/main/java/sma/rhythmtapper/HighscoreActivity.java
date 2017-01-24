@@ -3,9 +3,12 @@ package sma.rhythmtapper;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import java.text.ParseException;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,10 +36,15 @@ public class HighscoreActivity extends Activity {
         // load highscores
         _prefs = getSharedPreferences(PREF_FILE, 0);
 
+
         // TEST: add new value every time activity gets started
+        CharSequence dateString = DateFormat.format("dd.MM.yyyy, hh:mm", new Date());
         SharedPreferences.Editor edit = _prefs.edit();
-        edit.putString(new Date().toString(), "1000");
+        edit.putString(dateString.toString(), "1000");
         edit.commit();
+
+
+
 
         // iterate through all prefs
         Map<String, ?> keys = _prefs.getAll();
