@@ -21,6 +21,14 @@ public class MainActivity extends Activity {
         this._highscoreBtn = (Button)this.findViewById(R.id.main_btn_highscore);
         this._aboutBtn = (Button)this.findViewById(R.id.main_btn_about);
 
+        this._startBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(MainActivity.this, GameActivity.class);
+                MainActivity.this.startActivity(i);
+            }
+        });
+
         this._highscoreBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -28,12 +36,5 @@ public class MainActivity extends Activity {
                 MainActivity.this.startActivity(i);
             }
         });
-        /*this._aboutBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(MainActivity.this, AboutActivity.class);
-                MainActivity.this.startActivity(i);
-            }
-        });*/
     }
 }
