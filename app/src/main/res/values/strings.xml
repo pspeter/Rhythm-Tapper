@@ -2,6 +2,11 @@
     <string name="app_name">RhythmTapper</string>
     <string name="main_btn_start">Start Game</string>
     <string name="main_btn_highscore">Highscore</string>
+    <string name="main_btn_difficulty">Highscore</string>
     <string name="main_btn_about">About</string>
     <string name="title_activity_game">GameActivity</string>
+    <string name="diff_btn_save">Save Difficulty</string>
+    <string name="diff_radio_easy">Easy</string>
+    <string name="diff_radio_mid">Medium</string>
+    <string name="diff_radio_hard">Harrrrrrd</string>
 </resources>
