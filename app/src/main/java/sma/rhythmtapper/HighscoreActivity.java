@@ -3,6 +3,7 @@ package sma.rhythmtapper;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.widget.ArrayAdapter;
@@ -18,6 +19,7 @@ import java.util.Date;
 import java.util.Map;
 
 import sma.rhythmtapper.helpers.HighscoreAdapter;
+import sma.rhythmtapper.models.Difficulty;
 import sma.rhythmtapper.models.Highscore;
 
 public class HighscoreActivity extends Activity {
@@ -45,11 +47,11 @@ public class HighscoreActivity extends Activity {
         _hardTxtView = (TextView)this.findViewById(R.id.highscore_txt_score_hard);
 
         // load highscores
-        _prefs = getSharedPreferences(PREF_FILE, 0);
+        _prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        String easyMode = _prefs.getString("easy", "0");
-        String mediumMode = _prefs.getString("medium", "0");
-        String hardMode = _prefs.getString("hard", "0");
+        String easyMode = String.valueOf(_prefs.getInt(Difficulty.EASY_TAG, 0));
+        String mediumMode = String.valueOf(_prefs.getInt(Difficulty.MED_TAG, 0));
+        String hardMode = String.valueOf(_prefs.getInt(Difficulty.HARD_TAG, 0));
 
         _easyTxtView.setText(easyMode);
         _medTxtView.setText(mediumMode);

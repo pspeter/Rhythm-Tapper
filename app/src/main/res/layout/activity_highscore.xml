@@ -38,12 +38,6 @@
                 android:textSize="18sp"
                 android:textStyle="normal|bold" />
 
-            <TextView
-                android:text="@string/highscore_date"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/textView6"
-                android:textSize="18sp" />
         </TableRow>
 
         <TableRow
@@ -61,13 +55,10 @@
                 android:text="TextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/highscore_txt_score_easy" />
-
-            <TextView
-                android:text="TextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/highscore_txt_date_easy" />
+                android:id="@+id/highscore_txt_score_easy"
+                android:textColor="@android:color/black"
+                android:textStyle="normal|bold"
+                android:textSize="16sp" />
 
         </TableRow>
 
@@ -86,13 +77,10 @@
                 android:text="TextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/highscore_txt_score_medium" />
-
-            <TextView
-                android:text="TextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/highscore_txt_date_medium" />
+                android:id="@+id/highscore_txt_score_medium"
+                android:textSize="16sp"
+                android:textStyle="normal|bold"
+                android:textColor="@android:color/black" />
 
         </TableRow>
 
@@ -111,13 +99,10 @@
                 android:text="TextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/highscore_txt_score_hard" />
-
-            <TextView
-                android:text="TextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/highscore_txt_date_hard" />
+                android:id="@+id/highscore_txt_score_hard"
+                android:textSize="16sp"
+                android:textStyle="normal|bold"
+                android:textColor="@android:color/black" />
 
         </TableRow>
     </TableLayout>

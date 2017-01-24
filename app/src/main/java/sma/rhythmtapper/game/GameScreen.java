@@ -5,11 +5,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.util.Log;
 
+import sma.rhythmtapper.framework.FileIO;
 import sma.rhythmtapper.framework.Game;
 import sma.rhythmtapper.framework.Graphics;
 import sma.rhythmtapper.framework.Screen;
@@ -28,6 +30,7 @@ public class GameScreen extends Screen {
     private int _gameWidth;
     private Random _rand;
     private int _tick;
+    private Difficulty _difficulty;
     // score
     private int _score;
     private int _multiplier;
@@ -63,9 +66,10 @@ public class GameScreen extends Screen {
     GameScreen(Game game, Difficulty difficulty) {
         super(game);
 
+        _difficulty = difficulty;
         // init difficulty parameters
-        _ballSpeed = difficulty.getBallSpeed();
-        _spawnInterval = difficulty.getSpawnInterval();
+        _ballSpeed = _difficulty.getBallSpeed();
+        _spawnInterval = _difficulty.getSpawnInterval();
 
         // Initialize game objects
         _gameHeight = game.getGraphics().getHeight();
@@ -166,6 +170,32 @@ public class GameScreen extends Screen {
 
         if (_lifes <= 0) {
             state = GameState.GameOver;
+            Log.d("seas", "test game over");
+            // update highscore
+            FileIO fileIO = game.getFileIO();
+            SharedPreferences prefs = fileIO.getSharedPref();
+            int oldScore;
+
+            switch(_difficulty.getMode()) {
+                case Difficulty.EASY_TAG:
+                    oldScore = prefs.getInt(Difficulty.EASY_TAG,0);
+                    break;
+                case Difficulty.MED_TAG:
+                    oldScore = prefs.getInt(Difficulty.MED_TAG,0);
+                    break;
+                case Difficulty.HARD_TAG:
+                    oldScore = prefs.getInt(Difficulty.HARD_TAG,0);
+                    break;
+                default:
+                    oldScore = 0;
+                    break;
+            }
+
+            if(_score > oldScore) {
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putInt(_difficulty.getMode(), _score);
+                editor.commit();
+            }
         }
 
         // 3. Call individual update() methods here.
