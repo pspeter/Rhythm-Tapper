@@ -9,30 +9,32 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.util.Log;
-import android.util.StringBuilderPrinter;
 
 import sma.rhythmtapper.framework.Game;
 import sma.rhythmtapper.framework.Graphics;
-import sma.rhythmtapper.framework.Image;
 import sma.rhythmtapper.framework.Screen;
 import sma.rhythmtapper.framework.Input.TouchEvent;
+import sma.rhythmtapper.game.models.Ball;
 
 public class GameScreen extends Screen {
     private static final String TAG = "GameScreenTag";
     enum GameState {
         Ready, Running, Paused, GameOver
     }
+
+
     private int _gameHeight;
     private int _gameWidth;
     private int _score;
     private int _multiplier;
     private int _streak;
-    private List<Point> _points;
+    private List<Ball> _points;
     private Random _rand;
     private int _tick;
     private int _lifes;
 
-    private final double _spawnChance = 0.20;
+    private final double _spawnChance_normal = 0.17;
+    private final double _spawnChance_oneup = _spawnChance_normal + 0.005;
     private final int _spawnInterval = 10;
     private final int _pointSpeed = 20;
 
@@ -127,10 +129,10 @@ public class GameScreen extends Screen {
             }
         }
 
-        Iterator<Point> iter = _points.iterator();
+        Iterator<Ball> iter = _points.iterator();
         while (iter.hasNext()) {
-            Point p = iter.next();
-            if (p.y > 1880) {
+            Ball b = iter.next();
+            if (b.y > 1880) {
                 iter.remove();
                 Log.d(TAG, "point missed");
                 onMiss();
@@ -153,15 +155,19 @@ public class GameScreen extends Screen {
 
     private void hitLane(int from, int to) {
         boolean hasHit = false;
-        Iterator<Point> iter = _points.iterator();
+        Iterator<Ball> iter = _points.iterator();
         while (iter.hasNext()) {
-            Point p = iter.next();
-            if (p.x > from && p.x < to) {
-                if (p.y > 1650) {
+            Ball b = iter.next();
+            if (b.x > from && b.x < to) {
+                if (b.y > 1650) {
+                    if (b.type == Ball.BallType.OneUp) {
+                        ++_lifes;
+                    }
                     iter.remove();
                     hasHit = true;
                     Log.d(TAG, "point hit");
                     onHit();
+                    break;
                 }
             }
         }
@@ -203,21 +209,30 @@ public class GameScreen extends Screen {
     }
 
     private void movePoints() {
-        for(Point p: _points) {
-            p.y += _pointSpeed;
+        for(Ball b: _points) {
+            b.y += _pointSpeed;
         }
     }
 
     private void spawnPoints() {
         if (_tick == 0) {
-            if (_rand.nextFloat() < _spawnChance) {
-                _points.add(new Point(_gameWidth / 3 / 2, 50));
+            float randFloat = _rand.nextFloat();
+            if (randFloat < _spawnChance_normal) {
+                _points.add(new Ball(_gameWidth / 3 / 2, 50, Ball.BallType.Normal));
+            } else if (randFloat < _spawnChance_oneup) {
+                _points.add(new Ball(_gameWidth / 3 / 2, 50, Ball.BallType.OneUp));
             }
-            if (_rand.nextFloat() < _spawnChance) {
-                _points.add(new Point(_gameWidth / 2, 50));
+            randFloat = _rand.nextFloat();
+            if (randFloat < _spawnChance_normal) {
+                _points.add(new Ball(_gameWidth / 2, 50, Ball.BallType.Normal));
+            } else if (randFloat < _spawnChance_oneup) {
+                _points.add(new Ball(_gameWidth / 3 / 2, 50, Ball.BallType.OneUp));
             }
-            if (_rand.nextFloat() < _spawnChance) {
-                _points.add(new Point(_gameWidth - _gameWidth / 3 / 2, 50));
+            randFloat = _rand.nextFloat();
+            if (randFloat < _spawnChance_normal) {
+                _points.add(new Ball(_gameWidth - _gameWidth / 3 / 2, 50, Ball.BallType.Normal));
+            } else if (randFloat < _spawnChance_oneup) {
+                _points.add(new Ball(_gameWidth / 3 / 2, 50, Ball.BallType.OneUp));
             }
         }
     }
@@ -258,8 +273,15 @@ public class GameScreen extends Screen {
         g.drawImage(Assets.background, 0, 0);
         // g.drawImage(Assets.character, characterX, characterY);
 
-        for (Point p: _points) {
-            g.drawImage(Assets.ball, p.x - 90, p.y - 90);
+        for (Ball b: _points) {
+            switch(b.type) {
+                case Normal:
+                    g.drawImage(Assets.ballNormal, b.x - 90, b.y - 90);
+                    break;
+                case OneUp:
+                    g.drawImage(Assets.ballOneUp, b.x - 90, b.y - 90);
+                    break;
+            }
         }
 
         // Secondly, draw the UI above the game elements.

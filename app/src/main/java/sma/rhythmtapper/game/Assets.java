@@ -5,6 +5,7 @@ import sma.rhythmtapper.framework.Sound;
 
 public class Assets {
     public static Image background;
-    public static Image ball;
+    public static Image ballNormal;
+    public static Image ballOneUp;
     public static Sound click;
 }
