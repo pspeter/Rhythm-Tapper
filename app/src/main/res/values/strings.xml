@@ -3,4 +3,5 @@
     <string name="main_btn_start">Start Game</string>
     <string name="main_btn_highscore">Highscore</string>
     <string name="main_btn_about">About</string>
+    <string name="title_activity_game">GameActivity</string>
 </resources>
