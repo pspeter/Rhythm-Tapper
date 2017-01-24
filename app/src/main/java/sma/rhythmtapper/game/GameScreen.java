@@ -15,6 +15,7 @@ import sma.rhythmtapper.framework.Graphics;
 import sma.rhythmtapper.framework.Screen;
 import sma.rhythmtapper.framework.Input.TouchEvent;
 import sma.rhythmtapper.game.models.Ball;
+import sma.rhythmtapper.models.Difficulty;
 
 public class GameScreen extends Screen {
     private static final String TAG = "GameScreenTag";
@@ -37,8 +38,8 @@ public class GameScreen extends Screen {
 
     private final double _spawnChance_normal = 0.17;
     private final double _spawnChance_oneup = _spawnChance_normal + 0.005;
-    private final int _spawnInterval = 10;
-    private final int _ballSpeed = 20;
+    private int _spawnInterval = 10;
+    private int _ballSpeed = 20;
     private static final int HITBOX_TOP = 1620;
     private static final int HITBOX_BOTTOM = 1900;
 
@@ -49,8 +50,12 @@ public class GameScreen extends Screen {
 
     private Paint _paint;
 
-    public GameScreen(Game game) {
+    public GameScreen(Game game, Difficulty difficulty) {
         super(game);
+
+        // init difficulty parameters
+        _ballSpeed = difficulty.getBallSpeed();
+        _spawnInterval = difficulty.getSpawnInterval();
 
         // Initialize game objects
         _gameHeight = game.getGraphics().getHeight();
