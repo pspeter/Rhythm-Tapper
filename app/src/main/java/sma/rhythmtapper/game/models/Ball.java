@@ -6,22 +6,22 @@ package sma.rhythmtapper.game.models;
 
 public class Ball {
     public enum BallType {
-        Normal, OneUp
+        Normal, OneUp, Multiplier, Speeder
     }
 
     public int x;
     public int y;
     public BallType type;
-    public int speed;
+    private double speedMultiplier;
 
-    public Ball(int x, int y, BallType type, int speed){
+    public Ball(int x, int y, BallType type){
         this.x = x;
         this.y = y;
         this.type = type;
-        this.speed = speed;
+        this.speedMultiplier = type == BallType.Speeder ? 2 : 1;
     }
 
-    public void update() {
-        this.y += speed;
+    public void update(int speed) {
+        this.y += speed * speedMultiplier;
     }
 }

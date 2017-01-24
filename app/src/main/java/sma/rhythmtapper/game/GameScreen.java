@@ -32,6 +32,7 @@ public class GameScreen extends Screen {
     private int _score;
     private int _multiplier;
     private int _streak;
+    private int _doubleMultiplierTicker;
     // lifes
     private int _lifes;
     // balls
@@ -45,18 +46,21 @@ public class GameScreen extends Screen {
     // difficulty params
     private int _spawnInterval;
     private int _ballSpeed;
+    private double _globalSpeedMultiplier;
     private final double _spawnChance_normal = 0.17; // TODO dynamic
-    private final double _spawnChance_oneup = _spawnChance_normal + 0.005;
+    private final double _spawnChance_oneup = _spawnChance_normal + 0.001;
+    private final double _spawnChance_multiplier = _spawnChance_oneup + 0.004;
     // ui
     private Paint _paintText;
     // const
     private static final int HITBOX_TOP = 1620;
     private static final int HITBOX_BOTTOM = 1900;
     private static final int MISS_FLASH_INITIAL_ALPHA = 240;
+    private static final int DOUBLE_MULTIPLIER_TIME = 600;
 
     private GameState state = GameState.Ready;
 
-    public GameScreen(Game game, Difficulty difficulty) {
+    GameScreen(Game game, Difficulty difficulty) {
         super(game);
 
         // init difficulty parameters
@@ -67,8 +71,10 @@ public class GameScreen extends Screen {
         _gameHeight = game.getGraphics().getHeight();
         _gameWidth = game.getGraphics().getWidth();
         _multiplier = 1;
+        _doubleMultiplierTicker = 0;
         _score = 0;
         _streak = 0;
+        _globalSpeedMultiplier = 1;
         _ballsLeft = new ArrayList<>();
         _ballsMiddle = new ArrayList<>();
         _ballsRight = new ArrayList<>();
@@ -113,8 +119,10 @@ public class GameScreen extends Screen {
         // state now becomes GameState.Running.
         // Now the updateRunning() method will be called!
 
-        if (touchEvents.size() > 0)
+        if (touchEvents.size() > 0) {
             state = GameState.Running; // TODO triggers pause on every game start
+            touchEvents.clear();
+        }
     }
 
     private void updateRunning(List<TouchEvent> touchEvents, float deltaTime) {
@@ -166,15 +174,15 @@ public class GameScreen extends Screen {
 
         // update ball position
         for (Ball b: _ballsLeft) {
-            b.update();
+            b.update((int) (_ballSpeed * _globalSpeedMultiplier));
         }
 
         for (Ball b: _ballsMiddle) {
-            b.update();
+            b.update((int) (_ballSpeed * _globalSpeedMultiplier));
         }
 
         for (Ball b: _ballsRight) {
-            b.update();
+            b.update((int) (_ballSpeed * _globalSpeedMultiplier));
         }
 
         // remove missed balls
@@ -192,13 +200,16 @@ public class GameScreen extends Screen {
 
         // spawn new balls
         if (_tick == 0) {
-            spawnPoints();
+            spawnBalls();
         }
 
         // decrease miss flash intensities
         _laneHitAlphaLeft -= Math.min(_laneHitAlphaLeft, 10);
         _laneHitAlphaMiddle -= Math.min(_laneHitAlphaMiddle, 10);
         _laneHitAlphaRight -= Math.min(_laneHitAlphaRight, 10);
+
+        // decrease doubleMultiplierTicker
+        _doubleMultiplierTicker -= Math.min(1, _doubleMultiplierTicker);
 
         // update spawntime ticker
         _tick = (_tick + 1) % _spawnInterval;
@@ -222,13 +233,10 @@ public class GameScreen extends Screen {
         while (iter.hasNext()) {
             Ball b = iter.next();
             if (b.y > HITBOX_TOP) {
-                if (b.type == Ball.BallType.OneUp) {
-                    ++_lifes;
-                }
                 iter.remove();
                 hasHit = true;
                 Log.d(TAG, "point hit");
-                onHit();
+                onHit(b);
                 break; // only hit & remove the first one
             }
         }
@@ -243,48 +251,69 @@ public class GameScreen extends Screen {
         _streak = 0;
         _score -= Math.min(_score, 50);
         _multiplier = 1;
+        _globalSpeedMultiplier = 1;
         --_lifes;
     }
 
-    private void onHit() {
+    private void onHit(Ball b) {
         _streak++;
+        if (b.type == Ball.BallType.OneUp) {
+            ++_lifes;
+        }
+        else if (b.type == Ball.BallType.Multiplier) {
+            _doubleMultiplierTicker = DOUBLE_MULTIPLIER_TIME;
+        }
+        updateMultipliers();
+        _score += 10 * _multiplier
+                * (_doubleMultiplierTicker > 0 ? 2 : 1);
+    }
+
+    private void updateMultipliers() {
         if (_streak > 80) {
             _multiplier = 10;
+            _globalSpeedMultiplier = 1.64;
         }
         else if (_streak > 40) {
             _multiplier = 5;
+            _globalSpeedMultiplier = 1.32;
         }
         else if (_streak > 30) {
             _multiplier = 4;
+            _globalSpeedMultiplier = 1.24;
         }
         else if (_streak > 20) {
             _multiplier = 3;
+            _globalSpeedMultiplier = 1.16;
         }
         else if (_streak > 10) {
             _multiplier = 2;
+            _globalSpeedMultiplier = 1.08;
         }
-
-        _score += 10 * _multiplier;
     }
 
-    private void spawnPoints() {
+    private void spawnBalls() {
         float randFloat = _rand.nextFloat();
-        if (randFloat < _spawnChance_normal) {
-            _ballsLeft.add(new Ball(_gameWidth / 3 / 2, 50, Ball.BallType.Normal, _ballSpeed));
-        } else if (randFloat < _spawnChance_oneup) {
-            _ballsLeft.add(new Ball(_gameWidth / 3 / 2, 50, Ball.BallType.OneUp, _ballSpeed));
-        }
+        final int ballY = 0;
+        int ballX = _gameWidth / 3 / 2;
+        spawnBall(_ballsLeft, randFloat, ballX, ballY);
+
         randFloat = _rand.nextFloat();
-        if (randFloat < _spawnChance_normal) {
-            _ballsMiddle.add(new Ball(_gameWidth / 2, 50, Ball.BallType.Normal, _ballSpeed));
-        } else if (randFloat < _spawnChance_oneup) {
-            _ballsMiddle.add(new Ball(_gameWidth / 2, 50, Ball.BallType.OneUp, _ballSpeed));
-        }
+        ballX = _gameWidth / 2;
+        spawnBall(_ballsMiddle, randFloat, ballX, ballY);
+
         randFloat = _rand.nextFloat();
+        ballX = _gameWidth - _gameWidth / 3 / 2;
+        spawnBall(_ballsRight, randFloat, ballX, ballY);
+
+    }
+
+    private void spawnBall(List<Ball> balls, float randFloat, int ballX, int ballY) {
         if (randFloat < _spawnChance_normal) {
-            _ballsRight.add(new Ball(_gameWidth - _gameWidth / 3 / 2, 50, Ball.BallType.Normal, _ballSpeed));
+            balls.add(new Ball(ballX, ballY, Ball.BallType.Normal));
         } else if (randFloat < _spawnChance_oneup) {
-            _ballsRight.add(new Ball(_gameWidth - _gameWidth / 3 / 2, 50, Ball.BallType.OneUp, _ballSpeed));
+            balls.add(new Ball(ballX, ballY, Ball.BallType.OneUp));
+        } else if (randFloat < _spawnChance_multiplier) {
+            balls.add(new Ball(ballX, ballY, Ball.BallType.Multiplier));
         }
     }
 
@@ -359,6 +388,9 @@ public class GameScreen extends Screen {
             case OneUp:
                 g.drawImage(Assets.ballOneUp, b.x - 90, b.y - 90);
                 break;
+            case Multiplier:
+                g.drawImage(Assets.ballMultiplier, b.x - 90, b.y - 90);
+                break;
         }
     }
 
@@ -382,20 +414,23 @@ public class GameScreen extends Screen {
 
     private void drawRunningUI() {
         Graphics g = game.getGraphics();
+
+        if (_doubleMultiplierTicker > 0) {
+            g.drawImage(Assets.sirens, 0, 100);
+        }
+
         g.drawRect(0, 0, _gameWidth, 100, Color.BLACK);
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("Score: ").append(_score)
-                .append(" Multiplier: ").append(_multiplier).append("x")
-                .append(" Lifes remaining: ").append(_lifes);
-        g.drawString(sb.toString(), 600, 80, _paintText);
+        String s = "Score: " + _score +
+                "   Multiplier: " + _multiplier * (_doubleMultiplierTicker > 0 ? 2 : 1) + "x" +
+                "   Lifes remaining: " + _lifes;
+        g.drawString(s, 600, 80, _paintText);
     }
 
     private void drawPausedUI() {
         Graphics g = game.getGraphics();
         // Darken the entire screen so you can display the Paused screen.
         g.drawARGB(155, 0, 0, 0);
-        
     }
 
     private void drawGameOverUI() {
