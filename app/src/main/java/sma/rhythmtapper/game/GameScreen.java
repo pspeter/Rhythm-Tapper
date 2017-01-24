@@ -236,13 +236,13 @@ public class GameScreen extends Screen {
         if (randFloat < _spawnChance_normal) {
             _ballsMiddle.add(new Ball(_gameWidth / 2, 50, Ball.BallType.Normal, _ballSpeed));
         } else if (randFloat < _spawnChance_oneup) {
-            _ballsMiddle.add(new Ball(_gameWidth / 3 / 2, 50, Ball.BallType.OneUp, _ballSpeed));
+            _ballsMiddle.add(new Ball(_gameWidth / 2, 50, Ball.BallType.OneUp, _ballSpeed));
         }
         randFloat = _rand.nextFloat();
         if (randFloat < _spawnChance_normal) {
             _ballsRight.add(new Ball(_gameWidth - _gameWidth / 3 / 2, 50, Ball.BallType.Normal, _ballSpeed));
         } else if (randFloat < _spawnChance_oneup) {
-            _ballsRight.add(new Ball(_gameWidth / 3 / 2, 50, Ball.BallType.OneUp, _ballSpeed));
+            _ballsRight.add(new Ball(_gameWidth - _gameWidth / 3 / 2, 50, Ball.BallType.OneUp, _ballSpeed));
         }
     }
 
