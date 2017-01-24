@@ -70,7 +70,7 @@ public class GameScreen extends Screen {
         _ballsLeft = new ArrayList<>();
         _ballsMiddle = new ArrayList<>();
         _ballsRight = new ArrayList<>();
-        _rand = new Random(42);
+        _rand = new Random();
         _tick = 0;
         _lifes = 10;
         _laneHitAlphaLeft = 0;

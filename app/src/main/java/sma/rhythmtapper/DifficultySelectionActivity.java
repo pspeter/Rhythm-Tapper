@@ -18,8 +18,8 @@ public class DifficultySelectionActivity extends Activity implements View.OnClic
     private Button btnHard;
 
     private final Difficulty _diffEasy = new Difficulty(20, 10);
-    private final Difficulty _diffMid = new Difficulty(10, 20);
-    private final Difficulty _diffHard = new Difficulty(5, 25);
+    private final Difficulty _diffMid = new Difficulty(15, 20);
+    private final Difficulty _diffHard = new Difficulty(10, 25);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
