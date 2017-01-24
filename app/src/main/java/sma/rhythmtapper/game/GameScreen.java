@@ -28,7 +28,9 @@ public class GameScreen extends Screen {
     private int _score;
     private int _multiplier;
     private int _streak;
-    private List<Ball> _points;
+    private List<Ball> _ballsLeft;
+    private List<Ball> _ballsMiddle;
+    private List<Ball> _ballsRight;
     private Random _rand;
     private int _tick;
     private int _lifes;
@@ -36,7 +38,7 @@ public class GameScreen extends Screen {
     private final double _spawnChance_normal = 0.17;
     private final double _spawnChance_oneup = _spawnChance_normal + 0.005;
     private final int _spawnInterval = 10;
-    private final int _pointSpeed = 20;
+    private final int _ballSpeed = 20;
 
     GameState state = GameState.Ready;
 
@@ -54,7 +56,9 @@ public class GameScreen extends Screen {
         _multiplier = 1;
         _score = 0;
         _streak = 0;
-        _points = new ArrayList<>();
+        _ballsLeft = new ArrayList<>();
+        _ballsMiddle = new ArrayList<>();
+        _ballsRight = new ArrayList<>();
         _rand = new Random(42);
         _tick = 0;
         _lifes = 10;
@@ -99,11 +103,6 @@ public class GameScreen extends Screen {
 
     private void updateRunning(List<TouchEvent> touchEvents, float deltaTime) {
 
-        //This is identical to the update() method from our Unit 2/3 game.
-        spawnPoints();
-        movePoints();
-
-
         // 1. All touch input is handled here:
         int len = touchEvents.size();
 
@@ -113,13 +112,14 @@ public class GameScreen extends Screen {
             if (event.type == TouchEvent.TOUCH_DOWN) {
                 if (event.y > 1500) {
                     if (event.x < _gameWidth / 3) {
-                        hitLane(0, _gameWidth / 3);
+                        hitLane(_ballsLeft.iterator());
                     }
                     else if (event.x < _gameWidth / 3 * 2) {
-                        hitLane(_gameWidth / 3, _gameWidth / 3 * 2); // TODO triggers on every game start
+
+                        hitLane(_ballsMiddle.iterator()); // TODO triggers on every game start
                     }
                     else {
-                        hitLane(_gameWidth / 3 * 2, _gameWidth);
+                        hitLane(_ballsRight.iterator());
                     }
                 }
                 else {
@@ -129,50 +129,67 @@ public class GameScreen extends Screen {
             }
         }
 
-        Iterator<Ball> iter = _points.iterator();
-        while (iter.hasNext()) {
-            Ball b = iter.next();
-            if (b.y > 1880) {
-                iter.remove();
-                Log.d(TAG, "point missed");
-                onMiss();
-            }
-        }
+        removeMissed(_ballsLeft.iterator());
+        removeMissed(_ballsMiddle.iterator());
+        removeMissed(_ballsRight.iterator());
 
         // 2. Check miscellaneous events like death:
 
-        //if (livesLeft == 0) {
-        //    state = GameState.GameOver;
-        //}
-
+        if (_lifes == 0) {
+            state = GameState.GameOver;
+        }
 
         // 3. Call individual update() methods here.
         // This is where all the game updates happen.
         // For example, robot.update();
 
+        // update ball position
+        for (Ball b: _ballsLeft)
+            b.update();
+
+        for (Ball b: _ballsMiddle)
+            b.update();
+
+        for (Ball b: _ballsRight)
+            b.update();
+
+        // spawn new balls
+        if (_tick == 0) {
+            spawnPoints();
+        }
+
+        // update spawntime ticker
         _tick = (_tick + 1) % _spawnInterval;
     }
 
-    private void hitLane(int from, int to) {
+    private void removeMissed(Iterator<Ball> iterator) {
+        while (iterator.hasNext()) {
+            Ball b = iterator.next();
+            if (b.y > 1880) {
+                iterator.remove();
+                Log.d(TAG, "fail press");
+                onMiss();
+            }
+        }
+    }
+
+    private void hitLane(Iterator<Ball> iter) {
         boolean hasHit = false;
-        Iterator<Ball> iter = _points.iterator();
         while (iter.hasNext()) {
             Ball b = iter.next();
-            if (b.x > from && b.x < to) {
-                if (b.y > 1650) {
-                    if (b.type == Ball.BallType.OneUp) {
-                        ++_lifes;
-                    }
-                    iter.remove();
-                    hasHit = true;
-                    Log.d(TAG, "point hit");
-                    onHit();
-                    break;
+            if (b.y > 1650) {
+                if (b.type == Ball.BallType.OneUp) {
+                    ++_lifes;
                 }
+                iter.remove();
+                hasHit = true;
+                Log.d(TAG, "point hit");
+                onHit();
+                break;
             }
         }
         if (!hasHit) {
-            Log.d(TAG, "no point pressed");
+            Log.d(TAG, "point missed");
             onMiss();
         }
     }
@@ -182,9 +199,6 @@ public class GameScreen extends Screen {
         _score -= Math.min(_score, 50);
         _multiplier = 1;
         --_lifes;
-        if (_lifes == 0) {
-            state = GameState.GameOver;
-        }
     }
 
     private void onHit() {
@@ -208,32 +222,24 @@ public class GameScreen extends Screen {
         _score += 10 * _multiplier;
     }
 
-    private void movePoints() {
-        for(Ball b: _points) {
-            b.y += _pointSpeed;
-        }
-    }
-
     private void spawnPoints() {
-        if (_tick == 0) {
-            float randFloat = _rand.nextFloat();
-            if (randFloat < _spawnChance_normal) {
-                _points.add(new Ball(_gameWidth / 3 / 2, 50, Ball.BallType.Normal));
-            } else if (randFloat < _spawnChance_oneup) {
-                _points.add(new Ball(_gameWidth / 3 / 2, 50, Ball.BallType.OneUp));
-            }
-            randFloat = _rand.nextFloat();
-            if (randFloat < _spawnChance_normal) {
-                _points.add(new Ball(_gameWidth / 2, 50, Ball.BallType.Normal));
-            } else if (randFloat < _spawnChance_oneup) {
-                _points.add(new Ball(_gameWidth / 3 / 2, 50, Ball.BallType.OneUp));
-            }
-            randFloat = _rand.nextFloat();
-            if (randFloat < _spawnChance_normal) {
-                _points.add(new Ball(_gameWidth - _gameWidth / 3 / 2, 50, Ball.BallType.Normal));
-            } else if (randFloat < _spawnChance_oneup) {
-                _points.add(new Ball(_gameWidth / 3 / 2, 50, Ball.BallType.OneUp));
-            }
+        float randFloat = _rand.nextFloat();
+        if (randFloat < _spawnChance_normal) {
+            _ballsLeft.add(new Ball(_gameWidth / 3 / 2, 50, Ball.BallType.Normal, _ballSpeed));
+        } else if (randFloat < _spawnChance_oneup) {
+            _ballsLeft.add(new Ball(_gameWidth / 3 / 2, 50, Ball.BallType.OneUp, _ballSpeed));
+        }
+        randFloat = _rand.nextFloat();
+        if (randFloat < _spawnChance_normal) {
+            _ballsMiddle.add(new Ball(_gameWidth / 2, 50, Ball.BallType.Normal, _ballSpeed));
+        } else if (randFloat < _spawnChance_oneup) {
+            _ballsMiddle.add(new Ball(_gameWidth / 3 / 2, 50, Ball.BallType.OneUp, _ballSpeed));
+        }
+        randFloat = _rand.nextFloat();
+        if (randFloat < _spawnChance_normal) {
+            _ballsRight.add(new Ball(_gameWidth - _gameWidth / 3 / 2, 50, Ball.BallType.Normal, _ballSpeed));
+        } else if (randFloat < _spawnChance_oneup) {
+            _ballsRight.add(new Ball(_gameWidth / 3 / 2, 50, Ball.BallType.OneUp, _ballSpeed));
         }
     }
 
@@ -273,7 +279,7 @@ public class GameScreen extends Screen {
         g.drawImage(Assets.background, 0, 0);
         // g.drawImage(Assets.character, characterX, characterY);
 
-        for (Ball b: _points) {
+        for (Ball b: _ballsLeft) {
             switch(b.type) {
                 case Normal:
                     g.drawImage(Assets.ballNormal, b.x - 90, b.y - 90);
