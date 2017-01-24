@@ -23,36 +23,38 @@ public class GameScreen extends Screen {
         Ready, Running, Paused, GameOver
     }
 
-
+    // game params
     private int _gameHeight;
     private int _gameWidth;
+    private Random _rand;
+    private int _tick;
+    // score
     private int _score;
     private int _multiplier;
     private int _streak;
+    // lifes
+    private int _lifes;
+    // balls
     private List<Ball> _ballsLeft;
     private List<Ball> _ballsMiddle;
     private List<Ball> _ballsRight;
-    private Random _rand;
-    private int _tick;
-    private int _lifes;
+    // lane miss indicators
     private int _laneHitAlphaLeft;
     private int _laneHitAlphaMiddle;
     private int _laneHitAlphaRight;
-
-    private final double _spawnChance_normal = 0.17;
+    // difficulty params
+    private int _spawnInterval;
+    private int _ballSpeed;
+    private final double _spawnChance_normal = 0.17; // TODO dynamic
     private final double _spawnChance_oneup = _spawnChance_normal + 0.005;
-    private int _spawnInterval = 10;
-    private int _ballSpeed = 20;
+    // ui
+    private Paint _paintText;
+    // const
     private static final int HITBOX_TOP = 1620;
     private static final int HITBOX_BOTTOM = 1900;
     private static final int MISS_FLASH_INITIAL_ALPHA = 240;
 
-    GameState state = GameState.Ready;
-
-    // Variable Setup
-    // You would create game objects here.
-
-    private Paint _paintText;
+    private GameState state = GameState.Ready;
 
     public GameScreen(Game game, Difficulty difficulty) {
         super(game);
@@ -77,7 +79,7 @@ public class GameScreen extends Screen {
         _laneHitAlphaMiddle = 0;
         _laneHitAlphaRight = 0;
 
-        // Defining a paint object
+        // paint for text
         _paintText = new Paint();
         _paintText.setTextSize(30);
         _paintText.setTextAlign(Paint.Align.CENTER);
