@@ -13,6 +13,10 @@ import sma.rhythmtapper.models.Difficulty;
 
 public class LoadingScreen extends Screen {
     private Difficulty _diff;
+    private static final String IMAGE_PATH = "img/";
+    private static final String SOUND_EFFECTS_PATH = "audio/";
+
+
     public LoadingScreen(Game game, Difficulty difficulty) {
         super(game);
         this._diff = difficulty;
@@ -22,17 +26,21 @@ public class LoadingScreen extends Screen {
     @Override
     public void update(float deltaTime) {
         Graphics g = game.getGraphics();
-        Assets.background = g.newImage("background_placeholder.jpg", Graphics.ImageFormat.RGB565);
-        Assets.ballNormal = g.newImage("ball_placeholder.png", Graphics.ImageFormat.RGB565);
-        Assets.ballMultiplier = g.newImage("ball_multiplier.png", Graphics.ImageFormat.RGB565);
-        Assets.ballOneUp = g.newImage("ball_oneup.png", Graphics.ImageFormat.RGB565);
-        Assets.ballSpeeder = g.newImage("ball_speeder.png", Graphics.ImageFormat.RGB565);
-        Assets.ballBomb = g.newImage("ball_bomb.png", Graphics.ImageFormat.RGB565);
-        Assets.explosion = g.newImage("explosion.png", Graphics.ImageFormat.RGB565);
-        Assets.explosionBright = g.newImage("explosion_bright.png", Graphics.ImageFormat.RGB565);
-        Assets.ballSkull = g.newImage("skull-ball-icon.png", Graphics.ImageFormat.RGB565);
-        Assets.sirens = g.newImage("sirens.png", Graphics.ImageFormat.RGB565);
-        Assets.click = game.getAudio().createSound("guiclick.ogg");
+
+        Assets.background = g.newImage(IMAGE_PATH + "background_placeholder.jpg", Graphics.ImageFormat.RGB565);
+        Assets.ballNormal = g.newImage(IMAGE_PATH + "ball_placeholder.png", Graphics.ImageFormat.RGB565);
+        Assets.ballMultiplier = g.newImage(IMAGE_PATH + "ball_multiplier.png", Graphics.ImageFormat.RGB565);
+        Assets.ballOneUp = g.newImage(IMAGE_PATH + "ball_oneup.png", Graphics.ImageFormat.RGB565);
+        Assets.ballSpeeder = g.newImage(IMAGE_PATH + "ball_speeder.png", Graphics.ImageFormat.RGB565);
+        Assets.ballBomb = g.newImage(IMAGE_PATH + "ball_bomb.png", Graphics.ImageFormat.RGB565);
+        Assets.explosion = g.newImage(IMAGE_PATH + "explosion.png", Graphics.ImageFormat.RGB565);
+        Assets.explosionBright = g.newImage(IMAGE_PATH + "explosion_bright.png", Graphics.ImageFormat.RGB565);
+        Assets.ballSkull = g.newImage(IMAGE_PATH + "skull-ball-icon.png", Graphics.ImageFormat.RGB565);
+        Assets.sirens = g.newImage(IMAGE_PATH + "sirens.png", Graphics.ImageFormat.RGB565);
+
+        Assets.soundClick = game.getAudio().createSound(SOUND_EFFECTS_PATH + "sound_guiclick.ogg");
+        Assets.soundExplosion = game.getAudio().createSound(SOUND_EFFECTS_PATH + "sound_explosion.ogg");
+
         game.setScreen(new GameScreen(game, _diff));
     }
     @Override

@@ -54,11 +54,11 @@ public class GameScreen extends Screen {
     private int _spawnInterval;
     private int _ballSpeed;
     private double _globalSpeedMultiplier;
-    private final double _spawnChance_normal = 0.17; // TODO dynamic
+    private final double _spawnChance_normal = 0.15; // TODO dynamic
     private final double _spawnChance_oneup = _spawnChance_normal + 0.002;
     private final double _spawnChance_multiplier = _spawnChance_oneup + 0.001;
-    private final double _spawnChance_speeder = _spawnChance_multiplier + 0.015;
-    private final double _spawnChance_bomb = _spawnChance_speeder + 0.005;
+    private final double _spawnChance_speeder = _spawnChance_multiplier + 0.012;
+    private final double _spawnChance_bomb = _spawnChance_speeder + 0.019;
     private final double _spawnChance_skull = _spawnChance_bomb + 0.007;
 
 
@@ -348,13 +348,13 @@ public class GameScreen extends Screen {
             } break;
             case Bomb: {
                 _explosionTicker = EXPLOSION_TIME;
+                Assets.soundExplosion.play(1);
             } break;
             case Skull: {
                 onMiss(null); // hitting a skull counts as a miss
                 return;
             }
             default: {
-                Log.e(TAG, "onHit() does not implement all balltypes!");
             }
         }
 
@@ -482,6 +482,7 @@ public class GameScreen extends Screen {
             } else {
                 g.drawImage(Assets.explosionBright, 0, 680);
             }
+            g.drawARGB((int)((double)_explosionTicker/EXPLOSION_TIME * 255), 255, 255, 255);
         }
 
         // Secondly, draw the UI above the game elements.
