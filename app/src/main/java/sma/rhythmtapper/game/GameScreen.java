@@ -11,6 +11,7 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.util.Log;
 
+import sma.rhythmtapper.MainActivity;
 import sma.rhythmtapper.framework.FileIO;
 import sma.rhythmtapper.framework.Game;
 import sma.rhythmtapper.framework.Graphics;
@@ -378,7 +379,9 @@ public class GameScreen extends Screen {
             if (event.type == TouchEvent.TOUCH_UP) {
                 if (event.x > 300 && event.x < 980 && event.y > 100
                         && event.y < 500) {
-                    nullify();
+                    //nullify();
+                    //this.backButton();
+                    game.goToActivity(MainActivity.class);
                     // game.setScreen(new MainMenuScreen(game)); TODO mainmenu, highscore update
                     return;
                 }

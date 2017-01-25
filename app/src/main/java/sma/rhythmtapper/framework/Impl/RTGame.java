@@ -2,6 +2,7 @@ package sma.rhythmtapper.framework.Impl;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -26,6 +27,15 @@ public class RTGame extends Activity implements Game {
     FileIO fileIO;
     Screen screen;
     PowerManager.WakeLock wakeLock;
+
+    @Override
+    public void goToActivity(Class<?> activity) {
+        Intent i = new Intent(this, activity);
+        // add flag, when activity already runs,
+        // use it instead of launching a new instance
+        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(i);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
