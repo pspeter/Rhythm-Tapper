@@ -304,11 +304,7 @@ public class GameScreen extends Screen {
                 Log.d(TAG, "fail press");
                 onMiss(b);
 
-                if(b.type == Ball.BallType.Skull) {
-                    return false;
-                } else {
-                    return true;
-                }
+                return b.type != Ball.BallType.Skull;
             }
         }
         return false;
