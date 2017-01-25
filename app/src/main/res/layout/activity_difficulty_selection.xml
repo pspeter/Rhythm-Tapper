@@ -20,21 +20,27 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/diff_btn_easy"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:background="@android:color/holo_green_dark" />
 
         <Button
             android:text="@string/diff_radio_mid"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/diff_btn_mid"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:background="@android:color/holo_orange_light" />
 
         <Button
             android:text="@string/diff_radio_hard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/diff_btn_hard"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:background="@android:color/holo_red_dark" />
 
     </LinearLayout>
 </RelativeLayout>
