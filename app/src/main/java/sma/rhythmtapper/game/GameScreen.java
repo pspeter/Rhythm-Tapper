@@ -14,6 +14,7 @@ import android.util.Log;
 import sma.rhythmtapper.framework.FileIO;
 import sma.rhythmtapper.framework.Game;
 import sma.rhythmtapper.framework.Graphics;
+import sma.rhythmtapper.framework.Input;
 import sma.rhythmtapper.framework.Screen;
 import sma.rhythmtapper.framework.Input.TouchEvent;
 import sma.rhythmtapper.game.models.Ball;
@@ -107,11 +108,6 @@ public class GameScreen extends Screen {
     public void update(float deltaTime) {
         List<TouchEvent> touchEvents = game.getInput().getTouchEvents();
 
-        // We have four separate update methods in this example.
-        // Depending on the state of the game, we call different update methods.
-        // Refer to Unit 3's code. We did a similar thing without separating the
-        // update methods.
-
         if (state == GameState.Ready)
             updateReady(touchEvents);
         if (state == GameState.Running)
@@ -123,12 +119,6 @@ public class GameScreen extends Screen {
     }
 
     private void updateReady(List<TouchEvent> touchEvents) {
-
-        // This example starts with a "Ready" screen.
-        // When the user touches the screen, the game begins.
-        // state now becomes GameState.Running.
-        // Now the updateRunning() method will be called!
-
         if (touchEvents.size() > 0) {
             state = GameState.Running; // TODO triggers pause on every game start
             touchEvents.clear();
@@ -138,6 +128,48 @@ public class GameScreen extends Screen {
     private void updateRunning(List<TouchEvent> touchEvents, float deltaTime) {
 
         // 1. All touch input is handled here:
+        handleTouchEvents(touchEvents);
+
+        // 2. Check miscellaneous events like death:
+        checkDeath();
+
+        // 3. Individual update() methods.
+        updateVariables();
+    }
+
+    private void checkDeath() {
+        if (_lifes <= 0) {
+            state = GameState.GameOver;
+            Log.d("seas", "test game over");
+            // update highscore
+            FileIO fileIO = game.getFileIO();
+            SharedPreferences prefs = fileIO.getSharedPref();
+            int oldScore;
+
+            switch(_difficulty.getMode()) {
+                case Difficulty.EASY_TAG:
+                    oldScore = prefs.getInt(Difficulty.EASY_TAG,0);
+                    break;
+                case Difficulty.MED_TAG:
+                    oldScore = prefs.getInt(Difficulty.MED_TAG,0);
+                    break;
+                case Difficulty.HARD_TAG:
+                    oldScore = prefs.getInt(Difficulty.HARD_TAG,0);
+                    break;
+                default:
+                    oldScore = 0;
+                    break;
+            }
+
+            if(_score > oldScore) {
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putInt(_difficulty.getMode(), _score);
+                editor.apply();
+            }
+        }
+    }
+
+    private void handleTouchEvents(List<TouchEvent> touchEvents) {
         int len = touchEvents.size();
 
         for (int i = 0; i < len; i++) {
@@ -171,43 +203,10 @@ public class GameScreen extends Screen {
                 }
             }
         }
+    }
 
-        // 2. Check miscellaneous events like death:
-
-        if (_lifes <= 0) {
-            state = GameState.GameOver;
-            Log.d("seas", "test game over");
-            // update highscore
-            FileIO fileIO = game.getFileIO();
-            SharedPreferences prefs = fileIO.getSharedPref();
-            int oldScore;
-
-            switch(_difficulty.getMode()) {
-                case Difficulty.EASY_TAG:
-                    oldScore = prefs.getInt(Difficulty.EASY_TAG,0);
-                    break;
-                case Difficulty.MED_TAG:
-                    oldScore = prefs.getInt(Difficulty.MED_TAG,0);
-                    break;
-                case Difficulty.HARD_TAG:
-                    oldScore = prefs.getInt(Difficulty.HARD_TAG,0);
-                    break;
-                default:
-                    oldScore = 0;
-                    break;
-            }
-
-            if(_score > oldScore) {
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putInt(_difficulty.getMode(), _score);
-                editor.commit();
-            }
-        }
-
-        // 3. Call individual update() methods here.
-        // This is where all the game updates happen.
-        // For example, robot.update();
-
+    // update all the games variables each tick
+    private void updateVariables() {
         // update ball position
         for (Ball b: _ballsLeft) {
             b.update((int) (_ballSpeed * _globalSpeedMultiplier));
@@ -251,6 +250,7 @@ public class GameScreen extends Screen {
         _tick = (_tick + 1) % 100000;
     }
 
+    // remove the balls from an iterator that have fallen through the hitbox
     private boolean removeMissed(Iterator<Ball> iterator) {
         while (iterator.hasNext()) {
             Ball b = iterator.next();
@@ -264,6 +264,7 @@ public class GameScreen extends Screen {
         return false;
     }
 
+    // handles a TouchEvent on a certain lane
     private boolean hitLane(List<Ball> balls) {
         Iterator<Ball> iter = balls.iterator();
         Ball lowestBall = null;
@@ -289,14 +290,17 @@ public class GameScreen extends Screen {
         }
     }
 
+    // triggers when a lane gets tapped that has currently no ball in its hitbox
     private void onMiss() {
         _streak = 0;
         _score -= Math.min(_score, 50);
         _multiplier = 1;
         _globalSpeedMultiplier = 1;
         --_lifes;
+        updateMultipliers();
     }
 
+    // triggers when a lane gets tapped that currently has a ball in its hitbox
     private void onHit(Ball b) {
         _streak++;
         if (b.type == Ball.BallType.OneUp) {
@@ -310,26 +314,31 @@ public class GameScreen extends Screen {
                 * (_doubleMultiplierTicker > 0 ? 2 : 1);
     }
 
+    // triggers after a touch event was handled by hitLane()
     private void updateMultipliers() {
         if (_streak > 80) {
             _multiplier = 10;
-            _globalSpeedMultiplier = 1.64;
+            _globalSpeedMultiplier = 1.54;
         }
         else if (_streak > 40) {
             _multiplier = 5;
-            _globalSpeedMultiplier = 1.32;
+            _globalSpeedMultiplier = 1.28;
         }
         else if (_streak > 30) {
             _multiplier = 4;
-            _globalSpeedMultiplier = 1.24;
+            _globalSpeedMultiplier = 1.18;
         }
         else if (_streak > 20) {
             _multiplier = 3;
-            _globalSpeedMultiplier = 1.16;
+            _globalSpeedMultiplier = 1.10;
         }
         else if (_streak > 10) {
             _multiplier = 2;
-            _globalSpeedMultiplier = 1.08;
+            _globalSpeedMultiplier = 1.04;
+        }
+        else {
+            _multiplier = 1;
+            _globalSpeedMultiplier = 1.00;
         }
     }
 

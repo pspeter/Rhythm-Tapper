@@ -29,7 +29,7 @@ public class SingleTouchHandler implements TouchHandler {
                 return new TouchEvent();
             }
         };
-        touchEventPool = new Pool<TouchEvent>(factory, 100);
+        touchEventPool = new Pool<>(factory, 100);
         view.setOnTouchListener(this);
 
         this.scaleX = scaleX;
