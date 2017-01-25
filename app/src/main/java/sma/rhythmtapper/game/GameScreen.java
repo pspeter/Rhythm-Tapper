@@ -271,13 +271,11 @@ public class GameScreen extends Screen {
             Ball b = iter.next();
             if (lowestBall == null || b.y > lowestBall.y) {
                 lowestBall = b;
-                iter.remove();
                 Log.d(TAG, "point hit");
                 onHit(b);
             }
         }
 
-        //
         if (lowestBall != null && lowestBall.y > HITBOX_TOP) {
             balls.remove(lowestBall);
             return true;
