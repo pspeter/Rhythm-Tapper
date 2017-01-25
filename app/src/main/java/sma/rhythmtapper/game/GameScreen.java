@@ -18,6 +18,7 @@ import sma.rhythmtapper.framework.FileIO;
 import sma.rhythmtapper.framework.Game;
 import sma.rhythmtapper.framework.Graphics;
 import sma.rhythmtapper.framework.Input;
+import sma.rhythmtapper.framework.Music;
 import sma.rhythmtapper.framework.Screen;
 import sma.rhythmtapper.framework.Input.TouchEvent;
 import sma.rhythmtapper.game.models.Ball;
@@ -34,25 +35,31 @@ public class GameScreen extends Screen {
     private int _gameWidth;
     private Random _rand;
     private Difficulty _difficulty;
+    private int _lifes;
     private Vibrator _vibrator;
+
     // score
     private int _score;
     private int _multiplier;
     private int _streak;
+
     // tickers
     private int _tick;
     private int _doubleMultiplierTicker;
     private int _explosionTicker;
+
     // lifes
-    private int _lifes;
+
     // balls
     private List<Ball> _ballsLeft;
     private List<Ball> _ballsMiddle;
     private List<Ball> _ballsRight;
+
     // lane miss indicators
     private int _laneHitAlphaLeft;
     private int _laneHitAlphaMiddle;
     private int _laneHitAlphaRight;
+
     // difficulty params
     private int _spawnInterval;
     private int _ballSpeed;
@@ -64,9 +71,12 @@ public class GameScreen extends Screen {
     private final double _spawnChance_bomb = _spawnChance_speeder + 0.002;
     private final double _spawnChance_skull = _spawnChance_bomb + 0.014;
 
+    // audio
+    private Music _currentTrack;
 
     // ui
     private Paint _paintText;
+
     // constants
     // hitbox is the y-range within a ball can be hit by a press in its lane
     private static final int HITBOX_TOP = 1620;
@@ -109,6 +119,7 @@ public class GameScreen extends Screen {
         _laneHitAlphaLeft = 0;
         _laneHitAlphaMiddle = 0;
         _laneHitAlphaRight = 0;
+        _currentTrack = Assets.musicTrackFast1;
 
         // paint for text
         _paintText = new Paint();
@@ -136,6 +147,9 @@ public class GameScreen extends Screen {
         if (touchEvents.size() > 0) {
             state = GameState.Running; // TODO triggers pause on every game start
             touchEvents.clear();
+            _currentTrack.setLooping(true);
+            _currentTrack.setVolume(0.3f);
+            _currentTrack.play();
         }
     }
 
@@ -148,13 +162,6 @@ public class GameScreen extends Screen {
 
         // 3. Individual update() methods.
         updateVariables();
-
-        // 4. atom explosion handling
-        if (_explosionTicker > 0) {
-            explosion(_ballsLeft);
-            explosion(_ballsMiddle);
-            explosion(_ballsRight);
-        }
     }
 
     private void explosion(List<Ball> balls) {
@@ -274,6 +281,13 @@ public class GameScreen extends Screen {
         _laneHitAlphaLeft -= Math.min(_laneHitAlphaLeft, 10);
         _laneHitAlphaMiddle -= Math.min(_laneHitAlphaMiddle, 10);
         _laneHitAlphaRight -= Math.min(_laneHitAlphaRight, 10);
+
+        // atom explosion ticker
+        if (_explosionTicker > 0) {
+            explosion(_ballsLeft);
+            explosion(_ballsMiddle);
+            explosion(_ballsRight);
+        }
 
         // update tickers
         _doubleMultiplierTicker -= Math.min(1, _doubleMultiplierTicker);
@@ -426,6 +440,10 @@ public class GameScreen extends Screen {
     }
 
     private void updatePaused(List<TouchEvent> touchEvents) {
+        if (_currentTrack.isPlaying()) {
+            _currentTrack.pause();
+        }
+
         int len = touchEvents.size();
         for (int i = 0; i < len; i++) {
             TouchEvent event = touchEvents.get(i);
@@ -436,6 +454,10 @@ public class GameScreen extends Screen {
     }
 
     private void updateGameOver(List<TouchEvent> touchEvents) {
+        if (!_currentTrack.isStopped()) {
+            _currentTrack.stop();
+        }
+
         int len = touchEvents.size();
         for (int i = 0; i < len; i++) {
             TouchEvent event = touchEvents.get(i);
@@ -536,7 +558,6 @@ public class GameScreen extends Screen {
 
         g.drawARGB(155, 0, 0, 0);
         g.drawString(Integer.toString(_score), 640, 300, _paintText);
-
     }
 
     private void drawRunningUI() {
@@ -569,15 +590,18 @@ public class GameScreen extends Screen {
 
     @Override
     public void pause() {
-        if (state == GameState.Running)
+        if (state == GameState.Running) {
             state = GameState.Paused;
+        }
 
     }
 
     @Override
     public void resume() {
-        if (state == GameState.Paused)
+        if (state == GameState.Paused) {
             state = GameState.Running;
+            Assets.musicTrackFast1.play();
+        }
     }
 
     @Override

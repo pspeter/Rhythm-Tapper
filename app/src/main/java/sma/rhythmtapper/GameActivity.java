@@ -11,7 +11,6 @@ import sma.rhythmtapper.models.Difficulty;
 public class GameActivity extends RTGame {
     private Difficulty _diff;
 
-
     @Override
     public Screen getInitScreen() {
         // get passed difficulty object
