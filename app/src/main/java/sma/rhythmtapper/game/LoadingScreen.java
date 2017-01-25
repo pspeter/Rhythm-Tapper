@@ -1,6 +1,7 @@
 package sma.rhythmtapper.game;
 
 import android.content.res.AssetManager;
+import android.util.Log;
 
 import sma.rhythmtapper.framework.Game;
 import sma.rhythmtapper.framework.Graphics;
@@ -15,6 +16,7 @@ public class LoadingScreen extends Screen {
     private Difficulty _diff;
     private static final String IMAGE_PATH = "img/";
     private static final String SOUND_EFFECTS_PATH = "audio/";
+    private static final String Penis = "Penis";
 
 
     public LoadingScreen(Game game, Difficulty difficulty) {
@@ -25,6 +27,7 @@ public class LoadingScreen extends Screen {
 
     @Override
     public void update(float deltaTime) {
+        for (int i = 0; i < 1000; i++) Log.e("Test", Penis);
         Graphics g = game.getGraphics();
 
         Assets.background = g.newImage(IMAGE_PATH + "background_placeholder.jpg", Graphics.ImageFormat.RGB565);
@@ -40,6 +43,7 @@ public class LoadingScreen extends Screen {
 
         Assets.soundClick = game.getAudio().createSound(SOUND_EFFECTS_PATH + "sound_guiclick.ogg");
         Assets.soundExplosion = game.getAudio().createSound(SOUND_EFFECTS_PATH + "sound_explosion.ogg");
+        Assets.soundCreepyLaugh = game.getAudio().createSound(SOUND_EFFECTS_PATH + "sound_creepy_laugh.mp3");
 
         game.setScreen(new GameScreen(game, _diff));
     }

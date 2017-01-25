@@ -16,4 +16,5 @@ class Assets {
     static Image sirens;
     static Sound soundClick;
     static Sound soundExplosion;
+    static Sound soundCreepyLaugh;
 }
