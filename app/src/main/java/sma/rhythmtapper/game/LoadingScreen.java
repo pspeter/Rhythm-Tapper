@@ -1,5 +1,7 @@
 package sma.rhythmtapper.game;
 
+import android.content.res.AssetManager;
+
 import sma.rhythmtapper.framework.Game;
 import sma.rhythmtapper.framework.Graphics;
 import sma.rhythmtapper.framework.Screen;
@@ -28,6 +30,7 @@ public class LoadingScreen extends Screen {
         Assets.ballBomb = g.newImage("ball_bomb.png", Graphics.ImageFormat.RGB565);
         Assets.explosion = g.newImage("explosion.png", Graphics.ImageFormat.RGB565);
         Assets.explosionBright = g.newImage("explosion_bright.png", Graphics.ImageFormat.RGB565);
+        Assets.ballSkull = g.newImage("skull-ball-icon.png", Graphics.ImageFormat.RGB565);
         Assets.sirens = g.newImage("sirens.png", Graphics.ImageFormat.RGB565);
         Assets.click = game.getAudio().createSound("guiclick.ogg");
         game.setScreen(new GameScreen(game, _diff));

@@ -11,6 +11,7 @@ class Assets {
     static Image ballSpeeder;
     static Image ballBomb;
     static Image explosion;
+    static Image ballSkull;
     static Image explosionBright;
     static Image sirens;
     static Sound click;
