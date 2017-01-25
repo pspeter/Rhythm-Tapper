@@ -14,5 +14,7 @@ class Assets {
     static Image ballSkull;
     static Image explosionBright;
     static Image sirens;
-    static Sound click;
+    static Sound soundClick;
+    static Sound soundExplosion;
+    static Sound soundCreepyLaugh;
 }
