@@ -159,8 +159,6 @@ public class GameScreen extends Screen {
             Ball b = iter.next();
             if (b.y > EXPLOSION_TOP) {
                 iter.remove();
-                _streak++;
-                updateMultipliers();
                 _score += 10 * _multiplier
                         * (_doubleMultiplierTicker > 0 ? 2 : 1);
             }
