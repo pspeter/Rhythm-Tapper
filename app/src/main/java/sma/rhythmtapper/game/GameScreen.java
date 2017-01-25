@@ -5,10 +5,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.os.Vibrator;
 import android.util.Log;
 
 import sma.rhythmtapper.MainActivity;
@@ -27,11 +29,12 @@ public class GameScreen extends Screen {
         Ready, Running, Paused, GameOver
     }
 
-    // game params
+    // game and device
     private int _gameHeight;
     private int _gameWidth;
     private Random _rand;
     private Difficulty _difficulty;
+    private Vibrator _vibrator;
     // score
     private int _score;
     private int _multiplier;
@@ -90,6 +93,7 @@ public class GameScreen extends Screen {
         // Initialize game objects
         _gameHeight = game.getGraphics().getHeight();
         _gameWidth = game.getGraphics().getWidth();
+        _vibrator = game.getVibrator();
         _multiplier = 1;
         _doubleMultiplierTicker = 0;
         _score = 0;
@@ -326,6 +330,7 @@ public class GameScreen extends Screen {
         if(b != null && b.type == Ball.BallType.Skull) {
             return;
         }
+        _vibrator.vibrate(100);
         _streak = 0;
         _score -= Math.min(_score, 50);
         _multiplier = 1;

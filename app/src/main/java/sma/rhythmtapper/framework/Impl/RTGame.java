@@ -9,6 +9,7 @@ import android.graphics.Bitmap.Config;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.os.Vibrator;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -100,6 +101,11 @@ public class RTGame extends Activity implements Game {
     @Override
     public Graphics getGraphics() {
         return graphics;
+    }
+
+    @Override
+    public Vibrator getVibrator() {
+        return (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
     }
 
     @Override
