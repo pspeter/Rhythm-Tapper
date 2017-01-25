@@ -304,19 +304,17 @@ public class GameScreen extends Screen {
             Ball b = iter.next();
             if (lowestBall == null || b.y > lowestBall.y) {
                 lowestBall = b;
-                Log.d(TAG, "point hit");
             }
         }
 
         if (lowestBall != null && lowestBall.y > HITBOX_TOP) {
             balls.remove(lowestBall);
             onHit(lowestBall);
-            return true;
+            return lowestBall.type != Ball.BallType.Skull;
         } else {
             if (lowestBall != null && lowestBall.y > HITBOX_TOP - MISS_ZONE_HEIGHT) {
                 balls.remove(lowestBall);
             }
-            Log.d(TAG, "point missed");
             onMiss(null);
 
             return false;
@@ -325,7 +323,7 @@ public class GameScreen extends Screen {
 
     // triggers when a lane gets tapped that has currently no ball in its hitbox
     private void onMiss(Ball b) {
-        if(b == null || b.type == Ball.BallType.Skull) {
+        if(b != null && b.type == Ball.BallType.Skull) {
             return;
         }
         _streak = 0;
@@ -352,9 +350,6 @@ public class GameScreen extends Screen {
             case Skull: {
                 onMiss(null); // hitting a skull counts as a miss
                 return;
-            }
-            default: {
-                Log.e(TAG, "onHit() does not implement all balltypes!");
             }
         }
 
