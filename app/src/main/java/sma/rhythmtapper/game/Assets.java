@@ -8,6 +8,7 @@ public class Assets {
     public static Image ballNormal;
     public static Image ballMultiplier;
     public static Image ballOneUp;
+    public static Image ballSpeeder;
     public static Image sirens;
     public static Sound click;
 }

@@ -14,6 +14,7 @@ import android.util.Log;
 import sma.rhythmtapper.framework.FileIO;
 import sma.rhythmtapper.framework.Game;
 import sma.rhythmtapper.framework.Graphics;
+import sma.rhythmtapper.framework.Input;
 import sma.rhythmtapper.framework.Screen;
 import sma.rhythmtapper.framework.Input.TouchEvent;
 import sma.rhythmtapper.game.models.Ball;
@@ -53,11 +54,17 @@ public class GameScreen extends Screen {
     private final double _spawnChance_normal = 0.17; // TODO dynamic
     private final double _spawnChance_oneup = _spawnChance_normal + 0.001;
     private final double _spawnChance_multiplier = _spawnChance_oneup + 0.004;
+    private final double _spawnChance_speeder = _spawnChance_multiplier + 0.02;
+
     // ui
     private Paint _paintText;
-    // const
+    // constants
+    // hitbox is the y-range within a ball can be hit by a press in its lane
     private static final int HITBOX_TOP = 1620;
     private static final int HITBOX_BOTTOM = 1900;
+    // if no ball is in the hitbox when pressed, remove the lowest ball in the
+    // miss zone right above the hitbox (it still counts as a miss)
+    private static final int MISS_ZONE_HEIGHT = 150;
     private static final int MISS_FLASH_INITIAL_ALPHA = 240;
     private static final int DOUBLE_MULTIPLIER_TIME = 600;
 
@@ -101,11 +108,6 @@ public class GameScreen extends Screen {
     public void update(float deltaTime) {
         List<TouchEvent> touchEvents = game.getInput().getTouchEvents();
 
-        // We have four separate update methods in this example.
-        // Depending on the state of the game, we call different update methods.
-        // Refer to Unit 3's code. We did a similar thing without separating the
-        // update methods.
-
         if (state == GameState.Ready)
             updateReady(touchEvents);
         if (state == GameState.Running)
@@ -117,12 +119,6 @@ public class GameScreen extends Screen {
     }
 
     private void updateReady(List<TouchEvent> touchEvents) {
-
-        // This example starts with a "Ready" screen.
-        // When the user touches the screen, the game begins.
-        // state now becomes GameState.Running.
-        // Now the updateRunning() method will be called!
-
         if (touchEvents.size() > 0) {
             state = GameState.Running; // TODO triggers pause on every game start
             touchEvents.clear();
@@ -132,42 +128,16 @@ public class GameScreen extends Screen {
     private void updateRunning(List<TouchEvent> touchEvents, float deltaTime) {
 
         // 1. All touch input is handled here:
-        int len = touchEvents.size();
-
-        for (int i = 0; i < len; i++) {
-            TouchEvent event = touchEvents.get(i);
-
-            if (event.type == TouchEvent.TOUCH_DOWN) {
-                if (event.y > 1500) {
-                    // ball hit area
-                    if (event.x < _gameWidth / 3) {
-                        if (!hitLane(_ballsLeft.iterator())) {
-                            // if no ball was hit
-                            _laneHitAlphaLeft = MISS_FLASH_INITIAL_ALPHA;
-                        }
-                    }
-                    else if (event.x < _gameWidth / 3 * 2) {
-                        if (!hitLane(_ballsMiddle.iterator()))
-                        {
-                            _laneHitAlphaMiddle = MISS_FLASH_INITIAL_ALPHA;
-                        }
-                    }
-                    else {
-                        if (!hitLane(_ballsRight.iterator())) {
-                            _laneHitAlphaRight = MISS_FLASH_INITIAL_ALPHA;
-                        }
-                    }
-                }
-                else {
-                    // pause area
-                    touchEvents.remove(i);
-                    pause();
-                }
-            }
-        }
+        handleTouchEvents(touchEvents);
 
         // 2. Check miscellaneous events like death:
+        checkDeath();
 
+        // 3. Individual update() methods.
+        updateVariables();
+    }
+
+    private void checkDeath() {
         if (_lifes <= 0) {
             state = GameState.GameOver;
             Log.d("seas", "test game over");
@@ -194,14 +164,49 @@ public class GameScreen extends Screen {
             if(_score > oldScore) {
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putInt(_difficulty.getMode(), _score);
-                editor.commit();
+                editor.apply();
             }
         }
+    }
 
-        // 3. Call individual update() methods here.
-        // This is where all the game updates happen.
-        // For example, robot.update();
+    private void handleTouchEvents(List<TouchEvent> touchEvents) {
+        int len = touchEvents.size();
 
+        for (int i = 0; i < len; i++) {
+            TouchEvent event = touchEvents.get(i);
+
+            if (event.type == TouchEvent.TOUCH_DOWN) {
+                if (event.y > 1500) {
+                    // ball hit area
+                    if (event.x < _gameWidth / 3) {
+                        if (!hitLane(_ballsLeft)) {
+                            // if no ball was hit
+                            _laneHitAlphaLeft = MISS_FLASH_INITIAL_ALPHA;
+                        }
+                    }
+                    else if (event.x < _gameWidth / 3 * 2) {
+                        if (!hitLane(_ballsMiddle))
+                        {
+                            _laneHitAlphaMiddle = MISS_FLASH_INITIAL_ALPHA;
+                        }
+                    }
+                    else {
+                        if (!hitLane(_ballsRight)) {
+                            _laneHitAlphaRight = MISS_FLASH_INITIAL_ALPHA;
+                        }
+                    }
+                }
+                else {
+                    // pause area
+                    touchEvents.remove(i);
+                    pause();
+                }
+            }
+        }
+    }
+
+    // update all the games variables each tick
+    private void updateVariables() {
         // update ball position
         for (Ball b: _ballsLeft) {
             b.update((int) (_ballSpeed * _globalSpeedMultiplier));
@@ -229,7 +234,7 @@ public class GameScreen extends Screen {
         }
 
         // spawn new balls
-        if (_tick == 0) {
+        if (_tick % _spawnInterval == 0) {
             spawnBalls();
         }
 
@@ -242,9 +247,10 @@ public class GameScreen extends Screen {
         _doubleMultiplierTicker -= Math.min(1, _doubleMultiplierTicker);
 
         // update spawntime ticker
-        _tick = (_tick + 1) % _spawnInterval;
+        _tick = (_tick + 1) % 100000;
     }
 
+    // remove the balls from an iterator that have fallen through the hitbox
     private boolean removeMissed(Iterator<Ball> iterator) {
         while (iterator.hasNext()) {
             Ball b = iterator.next();
@@ -258,33 +264,43 @@ public class GameScreen extends Screen {
         return false;
     }
 
-    private boolean hitLane(Iterator<Ball> iter) {
-        boolean hasHit = false;
+    // handles a TouchEvent on a certain lane
+    private boolean hitLane(List<Ball> balls) {
+        Iterator<Ball> iter = balls.iterator();
+        Ball lowestBall = null;
         while (iter.hasNext()) {
             Ball b = iter.next();
-            if (b.y > HITBOX_TOP) {
-                iter.remove();
-                hasHit = true;
+            if (lowestBall == null || b.y > lowestBall.y) {
+                lowestBall = b;
                 Log.d(TAG, "point hit");
                 onHit(b);
-                break; // only hit & remove the first one
             }
         }
-        if (!hasHit) {
+
+        if (lowestBall != null && lowestBall.y > HITBOX_TOP) {
+            balls.remove(lowestBall);
+            return true;
+        } else {
+            if (lowestBall != null && lowestBall.y > HITBOX_TOP - MISS_ZONE_HEIGHT) {
+                balls.remove(lowestBall);
+            }
             Log.d(TAG, "point missed");
             onMiss();
+            return false;
         }
-        return hasHit;
     }
 
+    // triggers when a lane gets tapped that has currently no ball in its hitbox
     private void onMiss() {
         _streak = 0;
         _score -= Math.min(_score, 50);
         _multiplier = 1;
         _globalSpeedMultiplier = 1;
         --_lifes;
+        updateMultipliers();
     }
 
+    // triggers when a lane gets tapped that currently has a ball in its hitbox
     private void onHit(Ball b) {
         _streak++;
         if (b.type == Ball.BallType.OneUp) {
@@ -298,26 +314,31 @@ public class GameScreen extends Screen {
                 * (_doubleMultiplierTicker > 0 ? 2 : 1);
     }
 
+    // triggers after a touch event was handled by hitLane()
     private void updateMultipliers() {
         if (_streak > 80) {
             _multiplier = 10;
-            _globalSpeedMultiplier = 1.64;
+            _globalSpeedMultiplier = 1.54;
         }
         else if (_streak > 40) {
             _multiplier = 5;
-            _globalSpeedMultiplier = 1.32;
+            _globalSpeedMultiplier = 1.28;
         }
         else if (_streak > 30) {
             _multiplier = 4;
-            _globalSpeedMultiplier = 1.24;
+            _globalSpeedMultiplier = 1.18;
         }
         else if (_streak > 20) {
             _multiplier = 3;
-            _globalSpeedMultiplier = 1.16;
+            _globalSpeedMultiplier = 1.10;
         }
         else if (_streak > 10) {
             _multiplier = 2;
-            _globalSpeedMultiplier = 1.08;
+            _globalSpeedMultiplier = 1.04;
+        }
+        else {
+            _multiplier = 1;
+            _globalSpeedMultiplier = 1.00;
         }
     }
 
@@ -339,11 +360,13 @@ public class GameScreen extends Screen {
 
     private void spawnBall(List<Ball> balls, float randFloat, int ballX, int ballY) {
         if (randFloat < _spawnChance_normal) {
-            balls.add(new Ball(ballX, ballY, Ball.BallType.Normal));
+            balls.add(0, new Ball(ballX, ballY, Ball.BallType.Normal));
         } else if (randFloat < _spawnChance_oneup) {
-            balls.add(new Ball(ballX, ballY, Ball.BallType.OneUp));
+            balls.add(0, new Ball(ballX, ballY, Ball.BallType.OneUp));
         } else if (randFloat < _spawnChance_multiplier) {
-            balls.add(new Ball(ballX, ballY, Ball.BallType.Multiplier));
+            balls.add(0, new Ball(ballX, ballY, Ball.BallType.Multiplier));
+        } else if (randFloat < _spawnChance_speeder) {
+            balls.add(0, new Ball(ballX, ballY, Ball.BallType.Speeder));
         }
     }
 
@@ -420,6 +443,9 @@ public class GameScreen extends Screen {
                 break;
             case Multiplier:
                 g.drawImage(Assets.ballMultiplier, b.x - 90, b.y - 90);
+                break;
+            case Speeder:
+                g.drawImage(Assets.ballSpeeder, b.x - 90, b.y - 90);
                 break;
         }
     }
