@@ -25,6 +25,9 @@ public class LoadingScreen extends Screen {
         Assets.ballMultiplier = g.newImage("ball_multiplier.png", Graphics.ImageFormat.RGB565);
         Assets.ballOneUp = g.newImage("ball_oneup.png", Graphics.ImageFormat.RGB565);
         Assets.ballSpeeder = g.newImage("ball_speeder.png", Graphics.ImageFormat.RGB565);
+        Assets.ballBomb = g.newImage("ball_bomb.png", Graphics.ImageFormat.RGB565);
+        Assets.explosion = g.newImage("explosion.png", Graphics.ImageFormat.RGB565);
+        Assets.explosionBright = g.newImage("explosion_bright.png", Graphics.ImageFormat.RGB565);
         Assets.sirens = g.newImage("sirens.png", Graphics.ImageFormat.RGB565);
         Assets.click = game.getAudio().createSound("guiclick.ogg");
         game.setScreen(new GameScreen(game, _diff));
