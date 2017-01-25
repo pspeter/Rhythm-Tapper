@@ -6,7 +6,7 @@ package sma.rhythmtapper.game.models;
 
 public class Ball {
     public enum BallType {
-        Normal, OneUp, Multiplier, Speeder
+        Normal, OneUp, Multiplier, Speeder, Skull
     }
 
     public int x;

@@ -56,6 +56,7 @@ public class GameScreen extends Screen {
     private final double _spawnChance_oneup = _spawnChance_normal + 0.001;
     private final double _spawnChance_multiplier = _spawnChance_oneup + 0.004;
     private final double _spawnChance_speeder = _spawnChance_multiplier + 0.02;
+    private final double _spawnChance_skull = _spawnChance_speeder + 0.01;
 
     // ui
     private Paint _paintText;
@@ -258,8 +259,13 @@ public class GameScreen extends Screen {
             if (b.y > HITBOX_BOTTOM) {
                 iterator.remove();
                 Log.d(TAG, "fail press");
-                onMiss();
-                return true;
+                onMiss(b);
+
+                if(b.type == Ball.BallType.Skull) {
+                    return false;
+                } else {
+                    return true;
+                }
             }
         }
         return false;
@@ -274,7 +280,7 @@ public class GameScreen extends Screen {
             if (lowestBall == null || b.y > lowestBall.y) {
                 lowestBall = b;
                 Log.d(TAG, "point hit");
-                onHit(b);
+                onHit(lowestBall);
             }
         }
 
@@ -286,13 +292,17 @@ public class GameScreen extends Screen {
                 balls.remove(lowestBall);
             }
             Log.d(TAG, "point missed");
-            onMiss();
+            onMiss(null);
+
             return false;
         }
     }
 
     // triggers when a lane gets tapped that has currently no ball in its hitbox
-    private void onMiss() {
+    private void onMiss(Ball b) {
+        if(b == null || b.type == Ball.BallType.Skull) {
+            return;
+        }
         _streak = 0;
         _score -= Math.min(_score, 50);
         _multiplier = 1;
@@ -306,6 +316,9 @@ public class GameScreen extends Screen {
         _streak++;
         if (b.type == Ball.BallType.OneUp) {
             ++_lifes;
+        }
+        else if(b.type == Ball.BallType.Skull) {
+            --_lifes;
         }
         else if (b.type == Ball.BallType.Multiplier) {
             _doubleMultiplierTicker = DOUBLE_MULTIPLIER_TIME;
@@ -368,6 +381,8 @@ public class GameScreen extends Screen {
             balls.add(0, new Ball(ballX, ballY, Ball.BallType.Multiplier));
         } else if (randFloat < _spawnChance_speeder) {
             balls.add(0, new Ball(ballX, ballY, Ball.BallType.Speeder));
+        } else if (randFloat < _spawnChance_skull) {
+            balls.add(0, new Ball(ballX, ballY, Ball.BallType.Skull));
         }
     }
 
@@ -449,6 +464,9 @@ public class GameScreen extends Screen {
                 break;
             case Speeder:
                 g.drawImage(Assets.ballSpeeder, b.x - 90, b.y - 90);
+                break;
+            case Skull:
+                g.drawImage(Assets.ballSkull, b.x - 90, b.y - 90);
                 break;
         }
     }
