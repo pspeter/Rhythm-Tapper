@@ -3,13 +3,16 @@ package sma.rhythmtapper.game;
 import sma.rhythmtapper.framework.Image;
 import sma.rhythmtapper.framework.Sound;
 
-public class Assets {
-    public static Image background;
-    public static Image ballNormal;
-    public static Image ballMultiplier;
-    public static Image ballOneUp;
-    public static Image ballSpeeder;
-    public static Image ballSkull;
-    public static Image sirens;
-    public static Sound click;
+class Assets {
+    static Image background;
+    static Image ballNormal;
+    static Image ballMultiplier;
+    static Image ballOneUp;
+    static Image ballSpeeder;
+    static Image ballBomb;
+    static Image explosion;
+    static Image ballSkull;
+    static Image explosionBright;
+    static Image sirens;
+    static Sound click;
 }

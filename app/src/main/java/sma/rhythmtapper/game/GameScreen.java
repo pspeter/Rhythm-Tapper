@@ -31,13 +31,15 @@ public class GameScreen extends Screen {
     private int _gameHeight;
     private int _gameWidth;
     private Random _rand;
-    private int _tick;
     private Difficulty _difficulty;
     // score
     private int _score;
     private int _multiplier;
     private int _streak;
+    // tickers
+    private int _tick;
     private int _doubleMultiplierTicker;
+    private int _explosionTicker;
     // lifes
     private int _lifes;
     // balls
@@ -53,10 +55,12 @@ public class GameScreen extends Screen {
     private int _ballSpeed;
     private double _globalSpeedMultiplier;
     private final double _spawnChance_normal = 0.17; // TODO dynamic
-    private final double _spawnChance_oneup = _spawnChance_normal + 0.001;
-    private final double _spawnChance_multiplier = _spawnChance_oneup + 0.004;
-    private final double _spawnChance_speeder = _spawnChance_multiplier + 0.02;
-    private final double _spawnChance_skull = _spawnChance_speeder + 0.01;
+    private final double _spawnChance_oneup = _spawnChance_normal + 0.002;
+    private final double _spawnChance_multiplier = _spawnChance_oneup + 0.001;
+    private final double _spawnChance_speeder = _spawnChance_multiplier + 0.015;
+    private final double _spawnChance_bomb = _spawnChance_speeder + 0.005;
+    private final double _spawnChance_skull = _spawnChance_bomb + 0.007;
+
 
     // ui
     private Paint _paintText;
@@ -69,6 +73,9 @@ public class GameScreen extends Screen {
     private static final int MISS_ZONE_HEIGHT = 150;
     private static final int MISS_FLASH_INITIAL_ALPHA = 240;
     private static final int DOUBLE_MULTIPLIER_TIME = 600;
+    // explosion
+    private static final int EXPLOSION_TOP = 600;
+    private static final int EXPLOSION_TIME = 150;
 
     private GameState state = GameState.Ready;
 
@@ -93,6 +100,7 @@ public class GameScreen extends Screen {
         _ballsRight = new ArrayList<>();
         _rand = new Random();
         _tick = 0;
+        _explosionTicker = 0;
         _lifes = 10;
         _laneHitAlphaLeft = 0;
         _laneHitAlphaMiddle = 0;
@@ -128,7 +136,6 @@ public class GameScreen extends Screen {
     }
 
     private void updateRunning(List<TouchEvent> touchEvents, float deltaTime) {
-
         // 1. All touch input is handled here:
         handleTouchEvents(touchEvents);
 
@@ -137,6 +144,25 @@ public class GameScreen extends Screen {
 
         // 3. Individual update() methods.
         updateVariables();
+
+        // 4. atom explosion handling
+        if (_explosionTicker > 0) {
+            explosion(_ballsLeft);
+            explosion(_ballsMiddle);
+            explosion(_ballsRight);
+        }
+    }
+
+    private void explosion(List<Ball> balls) {
+        Iterator<Ball> iter = balls.iterator();
+        while (iter.hasNext()) {
+            Ball b = iter.next();
+            if (b.y > EXPLOSION_TOP) {
+                iter.remove();
+                _score += 10 * _multiplier
+                        * (_doubleMultiplierTicker > 0 ? 2 : 1);
+            }
+        }
     }
 
     private void checkDeath() {
@@ -245,10 +271,9 @@ public class GameScreen extends Screen {
         _laneHitAlphaMiddle -= Math.min(_laneHitAlphaMiddle, 10);
         _laneHitAlphaRight -= Math.min(_laneHitAlphaRight, 10);
 
-        // decrease doubleMultiplierTicker
+        // update tickers
         _doubleMultiplierTicker -= Math.min(1, _doubleMultiplierTicker);
-
-        // update spawntime ticker
+        _explosionTicker -= Math.min(1, _explosionTicker);
         _tick = (_tick + 1) % 100000;
     }
 
@@ -280,12 +305,12 @@ public class GameScreen extends Screen {
             if (lowestBall == null || b.y > lowestBall.y) {
                 lowestBall = b;
                 Log.d(TAG, "point hit");
-                onHit(lowestBall);
             }
         }
 
         if (lowestBall != null && lowestBall.y > HITBOX_TOP) {
             balls.remove(lowestBall);
+            onHit(lowestBall);
             return true;
         } else {
             if (lowestBall != null && lowestBall.y > HITBOX_TOP - MISS_ZONE_HEIGHT) {
@@ -314,15 +339,25 @@ public class GameScreen extends Screen {
     // triggers when a lane gets tapped that currently has a ball in its hitbox
     private void onHit(Ball b) {
         _streak++;
-        if (b.type == Ball.BallType.OneUp) {
-            ++_lifes;
+        switch(b.type) {
+            case OneUp: {
+                ++_lifes;
+            } break;
+            case Multiplier: {
+                _doubleMultiplierTicker = DOUBLE_MULTIPLIER_TIME;
+            } break;
+            case Bomb: {
+                _explosionTicker = EXPLOSION_TIME;
+            } break;
+            case Skull: {
+                onMiss(null); // hitting a skull counts as a miss
+                return;
+            }
+            default: {
+                Log.e(TAG, "onHit() does not implement all balltypes!");
+            }
         }
-        else if(b.type == Ball.BallType.Skull) {
-            --_lifes;
-        }
-        else if (b.type == Ball.BallType.Multiplier) {
-            _doubleMultiplierTicker = DOUBLE_MULTIPLIER_TIME;
-        }
+
         updateMultipliers();
         _score += 10 * _multiplier
                 * (_doubleMultiplierTicker > 0 ? 2 : 1);
@@ -381,6 +416,8 @@ public class GameScreen extends Screen {
             balls.add(0, new Ball(ballX, ballY, Ball.BallType.Multiplier));
         } else if (randFloat < _spawnChance_speeder) {
             balls.add(0, new Ball(ballX, ballY, Ball.BallType.Speeder));
+        } else if (randFloat < _spawnChance_bomb) {
+            balls.add(0, new Ball(ballX, ballY, Ball.BallType.Bomb));
         } else if (randFloat < _spawnChance_skull) {
             balls.add(0, new Ball(ballX, ballY, Ball.BallType.Skull));
         }
@@ -425,7 +462,6 @@ public class GameScreen extends Screen {
         g.drawRect(0                 , 0, _gameWidth / 3 + 1, _gameHeight, Color.argb(_laneHitAlphaLeft, 255, 0, 0));
         g.drawRect(_gameWidth / 3    , 0, _gameWidth / 3 + 1, _gameHeight, Color.argb(_laneHitAlphaMiddle, 255, 0, 0));
         g.drawRect(_gameWidth / 3 * 2, 0, _gameWidth / 3 + 1, _gameHeight, Color.argb(_laneHitAlphaRight, 255, 0, 0));
-        // g.drawImage(Assets.character, characterX, characterY);
 
         for (Ball b: _ballsLeft) {
             paintBall(g, b, deltaTime);
@@ -439,6 +475,15 @@ public class GameScreen extends Screen {
             paintBall(g, b, deltaTime);
         }
 
+
+        if (_explosionTicker > 0) {
+            if (_rand.nextDouble() > 0.05) {
+                g.drawImage(Assets.explosion, 0, 680);
+            } else {
+                g.drawImage(Assets.explosionBright, 0, 680);
+            }
+        }
+
         // Secondly, draw the UI above the game elements.
         if (state == GameState.Ready)
             drawReadyUI();
@@ -448,7 +493,6 @@ public class GameScreen extends Screen {
             drawPausedUI();
         if (state == GameState.GameOver)
             drawGameOverUI();
-
     }
 
     private void paintBall(Graphics g, Ball b, float deltaTime) {
@@ -464,6 +508,9 @@ public class GameScreen extends Screen {
                 break;
             case Speeder:
                 g.drawImage(Assets.ballSpeeder, b.x - 90, b.y - 90);
+                break;
+            case Bomb:
+                g.drawImage(Assets.ballBomb,  b.x - 90, b.y - 90);
                 break;
             case Skull:
                 g.drawImage(Assets.ballSkull, b.x - 90, b.y - 90);
