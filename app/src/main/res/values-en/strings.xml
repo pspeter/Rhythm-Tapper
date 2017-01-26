@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">RhythmTapper</string>
+    <string name="main_btn_start">Start Game</string>
+    <string name="main_btn_highscore">Highscore</string>
+    <string name="main_btn_difficulty">Highscore</string>
+    <string name="main_btn_about">About the game</string>
+    <string name="title_activity_game">GameActivity</string>
+    <string name="diff_radio_easy">Normal</string>
+    <string name="diff_radio_mid">Hard</string>
+    <string name="diff_radio_hard">X-Treeeeeeeeeeeeeeme!!11elf!</string>
+
+    <string name="highscore_mode">Mode</string>
+    <string name="highscore_score">Score</string>
+
+    <string name="highscore_txt_easy">Normal</string>
+    <string name="highscore_txt_mid">Hard</string>
+    <string name="highscore_txt_hard">X-Treeeeeeeme</string>
+
+    <string name="about_ball_normal">Normal</string>
+    <string name="about_ball_bomb">TNT</string>
+    <string name="about_ball_multiplier">Multiplier</string>
+    <string name="about_ball_speeder">Speedy</string>
+    <string name="about_ball_oneup">One up</string>
+    <string name="about_ball_skull">Skull</string>
+
+    <string name="about_us">RhythmTapper - a game brought to you from Peter Schmidbauer and Andreas Lobmaier with love. xoxo</string>
+    <string name="about_title">Ball types</string>
+    <string name="about_ball_normal_content">Nothing special, just gives you points</string>
+    <string name="about_ball_bomb_content">Automatically destroys incoming balls for a certain amount of time and adds their value to your score</string>
+    <string name="about_ball_multiplier_content">Double multiplier</string>
+    <string name="about_ball_speeder_content">Twice as fast than normal balls</string>
+    <string name="about_ball_oneup_content">Increases lives per one</string>
+    <string name="about_ball_skull_content">Decreases lives per one</string>
+</resources>
