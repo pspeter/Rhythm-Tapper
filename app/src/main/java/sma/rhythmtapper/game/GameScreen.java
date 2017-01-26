@@ -47,8 +47,7 @@ public class GameScreen extends Screen {
     private int _tick;
     private int _doubleMultiplierTicker;
     private int _explosionTicker;
-
-    // lifes
+    private float _currentTime;
 
     // balls
     private List<Ball> _ballsLeft;
@@ -61,15 +60,14 @@ public class GameScreen extends Screen {
     private int _laneHitAlphaRight;
 
     // difficulty params
-    private int _spawnInterval;
+    private float _spawnInterval;
     private int _ballSpeed;
-    private double _globalSpeedMultiplier;
-    private final double _spawnChance_normal = 0.15; // TODO dynamic
-    private final double _spawnChance_oneup = _spawnChance_normal + 0.001;
+    private final double _spawnChance_normal = 0.26; // TODO dynamic
+    private final double _spawnChance_oneup = _spawnChance_normal + 0.004;
     private final double _spawnChance_multiplier = _spawnChance_oneup + 0.002;
-    private final double _spawnChance_speeder = _spawnChance_multiplier + 0.012;
+    private final double _spawnChance_speeder = _spawnChance_multiplier + 0.003;
     private final double _spawnChance_bomb = _spawnChance_speeder + 0.002;
-    private final double _spawnChance_skull = _spawnChance_bomb + 0.014;
+    private final double _spawnChance_skull = _spawnChance_bomb + 0.013;
 
     // audio
     private Music _currentTrack;
@@ -78,9 +76,11 @@ public class GameScreen extends Screen {
     private Paint _paintText;
 
     // constants
+    // initial y coordinate of spawned balls
+    private static final int BALL_INITIAL_Y = 0;
     // hitbox is the y-range within a ball can be hit by a press in its lane
-    private static final int HITBOX_TOP = 1620;
-    private static final int HITBOX_BOTTOM = 1900;
+    private static final int HITBOX_CENTER = 1760;
+    private static final int HITBOX_HEIGHT = 280;
     // if no ball is in the hitbox when pressed, remove the lowest ball in the
     // miss zone right above the hitbox (it still counts as a miss)
     private static final int MISS_ZONE_HEIGHT = 150;
@@ -108,12 +108,12 @@ public class GameScreen extends Screen {
         _doubleMultiplierTicker = 0;
         _score = 0;
         _streak = 0;
-        _globalSpeedMultiplier = 1;
         _ballsLeft = new ArrayList<>();
         _ballsMiddle = new ArrayList<>();
         _ballsRight = new ArrayList<>();
         _rand = new Random();
         _tick = 0;
+        _currentTime = 0f;
         _explosionTicker = 0;
         _lifes = 10;
         _laneHitAlphaLeft = 0;
@@ -161,7 +161,7 @@ public class GameScreen extends Screen {
         checkDeath();
 
         // 3. Individual update() methods.
-        updateVariables();
+        updateVariables(deltaTime);
     }
 
     private void explosion(List<Ball> balls) {
@@ -179,7 +179,6 @@ public class GameScreen extends Screen {
     private void checkDeath() {
         if (_lifes <= 0) {
             state = GameState.GameOver;
-            Log.d("seas", "test game over");
             // update highscore
             FileIO fileIO = game.getFileIO();
             SharedPreferences prefs = fileIO.getSharedPref();
@@ -245,18 +244,21 @@ public class GameScreen extends Screen {
     }
 
     // update all the games variables each tick
-    private void updateVariables() {
+    private void updateVariables(float deltatime) {
+        // update timer
+        _currentTime += deltatime;
+
         // update ball position
         for (Ball b: _ballsLeft) {
-            b.update((int) (_ballSpeed * _globalSpeedMultiplier));
+            b.update((int) (_ballSpeed * deltatime));
         }
 
         for (Ball b: _ballsMiddle) {
-            b.update((int) (_ballSpeed * _globalSpeedMultiplier));
+            b.update((int) (_ballSpeed * deltatime));
         }
 
         for (Ball b: _ballsRight) {
-            b.update((int) (_ballSpeed * _globalSpeedMultiplier));
+            b.update((int) (_ballSpeed * deltatime));
         }
 
         // remove missed balls
@@ -273,7 +275,8 @@ public class GameScreen extends Screen {
         }
 
         // spawn new balls
-        if (_tick % _spawnInterval == 0) {
+        if (_currentTime % _spawnInterval <= deltatime) {
+            Log.d("spawntimer", "" + _currentTime + " " + _spawnInterval + " " + deltatime);
             spawnBalls();
         }
 
@@ -299,7 +302,7 @@ public class GameScreen extends Screen {
     private boolean removeMissed(Iterator<Ball> iterator) {
         while (iterator.hasNext()) {
             Ball b = iterator.next();
-            if (b.y > HITBOX_BOTTOM) {
+            if (b.y > HITBOX_CENTER + HITBOX_HEIGHT / 2) {
                 iterator.remove();
                 Log.d(TAG, "fail press");
                 onMiss(b);
@@ -321,12 +324,12 @@ public class GameScreen extends Screen {
             }
         }
 
-        if (lowestBall != null && lowestBall.y > HITBOX_TOP) {
+        if (lowestBall != null && lowestBall.y > HITBOX_CENTER - HITBOX_HEIGHT / 2) {
             balls.remove(lowestBall);
             onHit(lowestBall);
             return lowestBall.type != Ball.BallType.Skull;
         } else {
-            if (lowestBall != null && lowestBall.y > HITBOX_TOP - MISS_ZONE_HEIGHT) {
+            if (lowestBall != null && lowestBall.y > HITBOX_CENTER - HITBOX_HEIGHT / 2 - MISS_ZONE_HEIGHT) {
                 balls.remove(lowestBall);
             }
             onMiss(null);
@@ -344,7 +347,6 @@ public class GameScreen extends Screen {
         _streak = 0;
         _score -= Math.min(_score, 50);
         _multiplier = 1;
-        _globalSpeedMultiplier = 1;
         --_lifes;
         updateMultipliers();
     }
@@ -379,33 +381,27 @@ public class GameScreen extends Screen {
     private void updateMultipliers() {
         if (_streak > 80) {
             _multiplier = 10;
-            _globalSpeedMultiplier = 1.54;
         }
         else if (_streak > 40) {
             _multiplier = 5;
-            _globalSpeedMultiplier = 1.28;
         }
         else if (_streak > 30) {
             _multiplier = 4;
-            _globalSpeedMultiplier = 1.18;
         }
         else if (_streak > 20) {
             _multiplier = 3;
-            _globalSpeedMultiplier = 1.10;
         }
         else if (_streak > 10) {
             _multiplier = 2;
-            _globalSpeedMultiplier = 1.04;
         }
         else {
             _multiplier = 1;
-            _globalSpeedMultiplier = 1.00;
         }
     }
 
     private void spawnBalls() {
         float randFloat = _rand.nextFloat();
-        final int ballY = 0;
+        final int ballY = BALL_INITIAL_Y;
         int ballX = _gameWidth / 3 / 2;
         spawnBall(_ballsLeft, randFloat, ballX, ballY);
 
@@ -484,15 +480,15 @@ public class GameScreen extends Screen {
         g.drawRect(_gameWidth / 3 * 2, 0, _gameWidth / 3 + 1, _gameHeight, Color.argb(_laneHitAlphaRight, 255, 0, 0));
 
         for (Ball b: _ballsLeft) {
-            paintBall(g, b, deltaTime);
+            paintBall(g, b);
         }
 
         for (Ball b: _ballsMiddle) {
-            paintBall(g, b, deltaTime);
+            paintBall(g, b);
         }
 
         for (Ball b: _ballsRight) {
-            paintBall(g, b, deltaTime);
+            paintBall(g, b);
         }
 
 
@@ -516,10 +512,10 @@ public class GameScreen extends Screen {
             drawGameOverUI();
     }
 
-    private void paintBall(Graphics g, Ball b, float deltaTime) {
+    private void paintBall(Graphics g, Ball b) {
         switch(b.type) {
             case Normal:
-                g.drawImage(Assets.ballNormal, b.x - 90, b.y - 90); // TODO deltatime for framerate independent movement(?)
+                g.drawImage(Assets.ballNormal, b.x - 90, b.y - 90);
                 break;
             case OneUp:
                 g.drawImage(Assets.ballOneUp, b.x - 90, b.y - 90);

@@ -12,21 +12,21 @@ public class Difficulty implements Serializable{
     public static final String MED_TAG = "medium";
     public static final String HARD_TAG = "hard";
 
-    private int _spawnInterval;
+    private float _spawnInterval;
     private int _ballSpeed;
     private String _mode;
 
-    public Difficulty(String _mode, int spawnInterval, int ballSpeed) {
+    public Difficulty(String _mode, float spawnInterval, int ballSpeed) {
         this._mode = _mode;
         this._spawnInterval = spawnInterval;
         this._ballSpeed = ballSpeed;
     }
 
-    public int getSpawnInterval() {
+    public float getSpawnInterval() {
         return _spawnInterval;
     }
 
-    public void setSpawnInterval(int _spawnInterval) {
+    public void setSpawnInterval(float _spawnInterval) {
         this._spawnInterval = _spawnInterval;
     }
 
