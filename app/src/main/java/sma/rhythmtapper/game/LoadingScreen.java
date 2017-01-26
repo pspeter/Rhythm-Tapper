@@ -30,6 +30,7 @@ public class LoadingScreen extends Screen {
         Graphics g = game.getGraphics();
 
         Assets.background = g.newImage(IMAGE_PATH + "background_placeholder.jpg", Graphics.ImageFormat.RGB565);
+        Assets.gameover = g.newImage(IMAGE_PATH + "gameover.png", Graphics.ImageFormat.RGB565);
         Assets.ballNormal = g.newImage(IMAGE_PATH + "ball_placeholder.png", Graphics.ImageFormat.RGB565);
         Assets.ballMultiplier = g.newImage(IMAGE_PATH + "ball_multiplier.png", Graphics.ImageFormat.RGB565);
         Assets.ballOneUp = g.newImage(IMAGE_PATH + "ball_oneup.png", Graphics.ImageFormat.RGB565);

@@ -75,7 +75,8 @@ public class GameScreen extends Screen {
     private Music _currentTrack;
 
     // ui
-    private Paint _paintText;
+    private Paint _paintScore;
+    private Paint _paintGameover;
 
     // constants
     // how far the screen should scroll after the track ends
@@ -127,12 +128,19 @@ public class GameScreen extends Screen {
         _currentTrack = Assets.musicTrack;
         _isEnding = false;
 
-        // paint for text
-        _paintText = new Paint();
-        _paintText.setTextSize(30);
-        _paintText.setTextAlign(Paint.Align.CENTER);
-        _paintText.setAntiAlias(true);
-        _paintText.setColor(Color.WHITE);
+        // paints for text
+        _paintScore = new Paint();
+        _paintScore.setTextSize(30);
+        _paintScore.setTextAlign(Paint.Align.CENTER);
+        _paintScore.setAntiAlias(true);
+        _paintScore.setColor(Color.WHITE);
+
+
+        _paintGameover = new Paint();
+        _paintGameover.setTextSize(50);
+        _paintGameover.setTextAlign(Paint.Align.CENTER);
+        _paintGameover.setAntiAlias(true);
+        _paintGameover.setColor(Color.BLACK);
     }
 
     @Override
@@ -151,7 +159,7 @@ public class GameScreen extends Screen {
 
     private void updateReady(List<TouchEvent> touchEvents) {
         if (touchEvents.size() > 0) {
-            state = GameState.Running; // TODO triggers pause on every game start
+            state = GameState.Running;
             touchEvents.clear();
             _currentTrack.setLooping(false);
             _currentTrack.setVolume(0.3f);
@@ -478,13 +486,13 @@ public class GameScreen extends Screen {
         for (int i = 0; i < len; i++) {
             TouchEvent event = touchEvents.get(i);
             if (event.type == TouchEvent.TOUCH_UP) {
-                if (event.x > 300 && event.x < 980 && event.y > 100
-                        && event.y < 500) {
-                    //nullify();
-                    //this.backButton();
+                if (event.x > 300 && event.x < 540 && event.y > 845
+                        && event.y < 1100) {
                     game.goToActivity(MainActivity.class);
-                    // game.setScreen(new MainMenuScreen(game)); TODO mainmenu, highscore update
                     return;
+                } else if (event.x >= 540 && event.x < 780 && event.y > 845
+                        && event.y < 1100) {
+                    game.setScreen(new LoadingScreen(game, _difficulty));
                 }
             }
         }
@@ -563,7 +571,7 @@ public class GameScreen extends Screen {
 
         // Set all variables to null. You will be recreating them in the
         // constructor.
-        _paintText = null;
+        _paintScore = null;
 
         // Call garbage collector to clean up memory.
         System.gc();
@@ -573,7 +581,7 @@ public class GameScreen extends Screen {
         Graphics g = game.getGraphics();
 
         g.drawARGB(155, 0, 0, 0);
-        g.drawString(Integer.toString(_score), 640, 300, _paintText);
+        g.drawString("Tap to start!", 540, 500, _paintScore);
     }
 
     private void drawRunningUI() {
@@ -588,7 +596,7 @@ public class GameScreen extends Screen {
         String s = "Score: " + _score +
                 "   Multiplier: " + _multiplier * (_doubleMultiplierTicker > 0 ? 2 : 1) + "x" +
                 "   Lifes remaining: " + _lifes;
-        g.drawString(s, 600, 80, _paintText);
+        g.drawString(s, 600, 80, _paintScore);
     }
 
     private void drawPausedUI() {
@@ -599,9 +607,9 @@ public class GameScreen extends Screen {
 
     private void drawGameOverUI() {
         Graphics g = game.getGraphics();
-        g.drawRect(0, 0, 1281, 801, Color.BLACK);
-        g.drawString("GAME OVER.", 640, 300, _paintText);
-        g.drawString("FINAL SCORE: " + _score, 640, 600, _paintText);
+        g.drawARGB(205, 0, 0, 0);
+        g.drawImage(Assets.gameover, 200, 500);
+        g.drawString("FINAL SCORE: " + _score, 540, 845, _paintGameover);
     }
 
     @Override
