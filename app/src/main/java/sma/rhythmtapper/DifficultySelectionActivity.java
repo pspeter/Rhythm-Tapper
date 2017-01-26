@@ -18,7 +18,7 @@ public class DifficultySelectionActivity extends Activity implements View.OnClic
     private Button btnHard;
 
     private final Difficulty _diffEasy =
-            new Difficulty(Difficulty.EASY_TAG, "Aquaria_Minibadass_OC_ReMix.mp3", 100, 4);
+            new Difficulty(Difficulty.EASY_TAG, "Spyro_Year_of_the_Dragon_Acoustic_Fields_OC_ReMix.mp3", 115f/2, 8);
     private final Difficulty _diffMid =
             new Difficulty(Difficulty.MED_TAG, "super_meat_boy_power_of_the_meat.mp3", 128, 10);
     private final Difficulty _diffHard =

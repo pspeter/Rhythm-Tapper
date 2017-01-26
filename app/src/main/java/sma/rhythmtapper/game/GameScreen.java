@@ -81,7 +81,7 @@ public class GameScreen extends Screen {
     // how far the screen should scroll after the track ends
     private static final int END_TIME = 1800;
     // initial y coordinate of spawned balls
-    private static final int BALL_INITIAL_Y = 0;
+    private static final int BALL_INITIAL_Y = -50;
     // hitbox is the y-range within a ball can be hit by a press in its lane
     private static final int HITBOX_CENTER = 1760;
     private static final int HITBOX_HEIGHT = 280;
@@ -154,7 +154,7 @@ public class GameScreen extends Screen {
             state = GameState.Running; // TODO triggers pause on every game start
             touchEvents.clear();
             _currentTrack.setLooping(false);
-            _currentTrack.setVolume(0.3f);
+            _currentTrack.setVolume(0.25f);
             _currentTrack.play();
         }
     }
@@ -387,7 +387,7 @@ public class GameScreen extends Screen {
             } break;
             case Bomb: {
                 _explosionTicker = EXPLOSION_TIME;
-                Assets.soundExplosion.play(1);
+                Assets.soundExplosion.play(0.7f);
             } break;
             case Skull: {
                 onMiss(null); // hitting a skull counts as a miss
