@@ -23,7 +23,7 @@ public class AboutActivity extends Activity {
 
         data.add(new BallData(R.string.about_ball_normal_title,
                 R.string.about_ball_normal_content,
-                R.drawable.ball_placeholder));
+                R.drawable.ball_normal));
         data.add(new BallData(R.string.about_ball_oneup_title,
                 R.string.about_ball_oneup_content,
                 R.drawable.ball_oneup));
