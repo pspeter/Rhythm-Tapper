@@ -16,7 +16,7 @@ public class LoadingScreen extends Screen {
     private Difficulty _diff;
     private static final String IMAGE_PATH = "img/";
     private static final String SOUND_EFFECTS_PATH = "audio/";
-    private static final String Penis = "Penis";
+    private static final String MUSIC_PATH = "music/";
 
 
     public LoadingScreen(Game game, Difficulty difficulty) {
@@ -27,7 +27,6 @@ public class LoadingScreen extends Screen {
 
     @Override
     public void update(float deltaTime) {
-        for (int i = 0; i < 1000; i++) Log.e("Test", Penis);
         Graphics g = game.getGraphics();
 
         Assets.background = g.newImage(IMAGE_PATH + "background_placeholder.jpg", Graphics.ImageFormat.RGB565);
@@ -44,6 +43,8 @@ public class LoadingScreen extends Screen {
         Assets.soundClick = game.getAudio().createSound(SOUND_EFFECTS_PATH + "sound_guiclick.ogg");
         Assets.soundExplosion = game.getAudio().createSound(SOUND_EFFECTS_PATH + "sound_explosion.ogg");
         Assets.soundCreepyLaugh = game.getAudio().createSound(SOUND_EFFECTS_PATH + "sound_creepy_laugh.mp3");
+
+        Assets.musicTrack = game.getAudio().createMusic(MUSIC_PATH + _diff.getMusic());
 
         game.setScreen(new GameScreen(game, _diff));
     }

@@ -5,10 +5,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.os.Vibrator;
 import android.util.Log;
 
 import sma.rhythmtapper.MainActivity;
@@ -16,6 +18,7 @@ import sma.rhythmtapper.framework.FileIO;
 import sma.rhythmtapper.framework.Game;
 import sma.rhythmtapper.framework.Graphics;
 import sma.rhythmtapper.framework.Input;
+import sma.rhythmtapper.framework.Music;
 import sma.rhythmtapper.framework.Screen;
 import sma.rhythmtapper.framework.Input.TouchEvent;
 import sma.rhythmtapper.game.models.Ball;
@@ -27,47 +30,61 @@ public class GameScreen extends Screen {
         Ready, Running, Paused, GameOver
     }
 
-    // game params
+    // game and device
     private int _gameHeight;
     private int _gameWidth;
     private Random _rand;
     private Difficulty _difficulty;
+    private int _lifes;
+    private Vibrator _vibrator;
+    private boolean _isEnding;
+
     // score
     private int _score;
     private int _multiplier;
     private int _streak;
+
     // tickers
     private int _tick;
     private int _doubleMultiplierTicker;
     private int _explosionTicker;
-    // lifes
-    private int _lifes;
+    private float _currentTime;
+    private int _endTicker;
+
     // balls
     private List<Ball> _ballsLeft;
     private List<Ball> _ballsMiddle;
     private List<Ball> _ballsRight;
+
     // lane miss indicators
     private int _laneHitAlphaLeft;
     private int _laneHitAlphaMiddle;
     private int _laneHitAlphaRight;
+
     // difficulty params
-    private int _spawnInterval;
+    private float _spawnInterval;
     private int _ballSpeed;
-    private double _globalSpeedMultiplier;
-    private final double _spawnChance_normal = 0.15; // TODO dynamic
-    private final double _spawnChance_oneup = _spawnChance_normal + 0.001;
-    private final double _spawnChance_multiplier = _spawnChance_oneup + 0.002;
-    private final double _spawnChance_speeder = _spawnChance_multiplier + 0.012;
-    private final double _spawnChance_bomb = _spawnChance_speeder + 0.002;
+    private final double _spawnChance_normal = 0.26; // TODO dynamic
+    private final double _spawnChance_oneup = _spawnChance_normal + 0.003;
+    private final double _spawnChance_multiplier = _spawnChance_oneup + 0.001;
+    private final double _spawnChance_speeder = _spawnChance_multiplier + 0.003;
+    private final double _spawnChance_bomb = _spawnChance_speeder + 0.0005;
     private final double _spawnChance_skull = _spawnChance_bomb + 0.014;
 
+    // audio
+    private Music _currentTrack;
 
     // ui
     private Paint _paintText;
+
     // constants
+    // how far the screen should scroll after the track ends
+    private static final int END_TIME = 1800;
+    // initial y coordinate of spawned balls
+    private static final int BALL_INITIAL_Y = -50;
     // hitbox is the y-range within a ball can be hit by a press in its lane
-    private static final int HITBOX_TOP = 1620;
-    private static final int HITBOX_BOTTOM = 1900;
+    private static final int HITBOX_CENTER = 1760;
+    private static final int HITBOX_HEIGHT = 280;
     // if no ball is in the hitbox when pressed, remove the lowest ball in the
     // miss zone right above the hitbox (it still counts as a miss)
     private static final int MISS_ZONE_HEIGHT = 150;
@@ -90,21 +107,25 @@ public class GameScreen extends Screen {
         // Initialize game objects
         _gameHeight = game.getGraphics().getHeight();
         _gameWidth = game.getGraphics().getWidth();
+        _vibrator = game.getVibrator();
         _multiplier = 1;
         _doubleMultiplierTicker = 0;
         _score = 0;
         _streak = 0;
-        _globalSpeedMultiplier = 1;
         _ballsLeft = new ArrayList<>();
         _ballsMiddle = new ArrayList<>();
         _ballsRight = new ArrayList<>();
         _rand = new Random();
         _tick = 0;
+        _endTicker = END_TIME / _difficulty.getBallSpeed();
+        _currentTime = 0f;
         _explosionTicker = 0;
         _lifes = 10;
         _laneHitAlphaLeft = 0;
         _laneHitAlphaMiddle = 0;
         _laneHitAlphaRight = 0;
+        _currentTrack = Assets.musicTrack;
+        _isEnding = false;
 
         // paint for text
         _paintText = new Paint();
@@ -132,6 +153,9 @@ public class GameScreen extends Screen {
         if (touchEvents.size() > 0) {
             state = GameState.Running; // TODO triggers pause on every game start
             touchEvents.clear();
+            _currentTrack.setLooping(false);
+            _currentTrack.setVolume(0.25f);
+            _currentTrack.play();
         }
     }
 
@@ -141,15 +165,15 @@ public class GameScreen extends Screen {
 
         // 2. Check miscellaneous events like death:
         checkDeath();
+        checkEnd();
 
         // 3. Individual update() methods.
-        updateVariables();
+        updateVariables(deltaTime);
+    }
 
-        // 4. atom explosion handling
-        if (_explosionTicker > 0) {
-            explosion(_ballsLeft);
-            explosion(_ballsMiddle);
-            explosion(_ballsRight);
+    private void checkEnd() {
+        if (_currentTrack.isStopped()) {
+            _isEnding = true;
         }
     }
 
@@ -167,33 +191,36 @@ public class GameScreen extends Screen {
 
     private void checkDeath() {
         if (_lifes <= 0) {
-            state = GameState.GameOver;
-            Log.d("seas", "test game over");
-            // update highscore
-            FileIO fileIO = game.getFileIO();
-            SharedPreferences prefs = fileIO.getSharedPref();
-            int oldScore;
+            endGame();
+        }
+    }
 
-            switch(_difficulty.getMode()) {
-                case Difficulty.EASY_TAG:
-                    oldScore = prefs.getInt(Difficulty.EASY_TAG,0);
-                    break;
-                case Difficulty.MED_TAG:
-                    oldScore = prefs.getInt(Difficulty.MED_TAG,0);
-                    break;
-                case Difficulty.HARD_TAG:
-                    oldScore = prefs.getInt(Difficulty.HARD_TAG,0);
-                    break;
-                default:
-                    oldScore = 0;
-                    break;
-            }
+    private void endGame() {
+        state = GameState.GameOver;
+        // update highscore
+        FileIO fileIO = game.getFileIO();
+        SharedPreferences prefs = fileIO.getSharedPref();
+        int oldScore;
 
-            if(_score > oldScore) {
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putInt(_difficulty.getMode(), _score);
-                editor.apply();
-            }
+        switch(_difficulty.getMode()) {
+            case Difficulty.EASY_TAG:
+                oldScore = prefs.getInt(Difficulty.EASY_TAG,0);
+                break;
+            case Difficulty.MED_TAG:
+                oldScore = prefs.getInt(Difficulty.MED_TAG,0);
+                break;
+            case Difficulty.HARD_TAG:
+                oldScore = prefs.getInt(Difficulty.HARD_TAG,0);
+                break;
+            default:
+                oldScore = 0;
+                break;
+        }
+
+        if(_score > oldScore) {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putInt(_difficulty.getMode(), _score);
+            editor.apply();
         }
     }
 
@@ -234,18 +261,21 @@ public class GameScreen extends Screen {
     }
 
     // update all the games variables each tick
-    private void updateVariables() {
+    private void updateVariables(float deltatime) {
+        // update timer
+        _currentTime += deltatime;
+
         // update ball position
         for (Ball b: _ballsLeft) {
-            b.update((int) (_ballSpeed * _globalSpeedMultiplier));
+            b.update((int) (_ballSpeed * deltatime));
         }
 
         for (Ball b: _ballsMiddle) {
-            b.update((int) (_ballSpeed * _globalSpeedMultiplier));
+            b.update((int) (_ballSpeed * deltatime));
         }
 
         for (Ball b: _ballsRight) {
-            b.update((int) (_ballSpeed * _globalSpeedMultiplier));
+            b.update((int) (_ballSpeed * deltatime));
         }
 
         // remove missed balls
@@ -262,7 +292,7 @@ public class GameScreen extends Screen {
         }
 
         // spawn new balls
-        if (_tick % _spawnInterval == 0) {
+        if (!_isEnding && _currentTime % _spawnInterval <= deltatime) {
             spawnBalls();
         }
 
@@ -271,26 +301,37 @@ public class GameScreen extends Screen {
         _laneHitAlphaMiddle -= Math.min(_laneHitAlphaMiddle, 10);
         _laneHitAlphaRight -= Math.min(_laneHitAlphaRight, 10);
 
+        // atom explosion ticker
+        if (_explosionTicker > 0) {
+            explosion(_ballsLeft);
+            explosion(_ballsMiddle);
+            explosion(_ballsRight);
+        }
+
         // update tickers
         _doubleMultiplierTicker -= Math.min(1, _doubleMultiplierTicker);
         _explosionTicker -= Math.min(1, _explosionTicker);
         _tick = (_tick + 1) % 100000;
+
+        if (_isEnding) {
+            _endTicker -= Math.min(1, _endTicker);
+
+            if (_endTicker <= 0) {
+                endGame();
+            }
+        }
     }
 
     // remove the balls from an iterator that have fallen through the hitbox
     private boolean removeMissed(Iterator<Ball> iterator) {
         while (iterator.hasNext()) {
             Ball b = iterator.next();
-            if (b.y > HITBOX_BOTTOM) {
+            if (b.y > HITBOX_CENTER + HITBOX_HEIGHT / 2) {
                 iterator.remove();
                 Log.d(TAG, "fail press");
                 onMiss(b);
 
-                if(b.type == Ball.BallType.Skull) {
-                    return false;
-                } else {
-                    return true;
-                }
+                return b.type != Ball.BallType.Skull;
             }
         }
         return false;
@@ -307,12 +348,12 @@ public class GameScreen extends Screen {
             }
         }
 
-        if (lowestBall != null && lowestBall.y > HITBOX_TOP) {
+        if (lowestBall != null && lowestBall.y > HITBOX_CENTER - HITBOX_HEIGHT / 2) {
             balls.remove(lowestBall);
             onHit(lowestBall);
             return lowestBall.type != Ball.BallType.Skull;
         } else {
-            if (lowestBall != null && lowestBall.y > HITBOX_TOP - MISS_ZONE_HEIGHT) {
+            if (lowestBall != null && lowestBall.y > HITBOX_CENTER - HITBOX_HEIGHT / 2 - MISS_ZONE_HEIGHT) {
                 balls.remove(lowestBall);
             }
             onMiss(null);
@@ -326,10 +367,10 @@ public class GameScreen extends Screen {
         if(b != null && b.type == Ball.BallType.Skull) {
             return;
         }
+        _vibrator.vibrate(100);
         _streak = 0;
         _score -= Math.min(_score, 50);
         _multiplier = 1;
-        _globalSpeedMultiplier = 1;
         --_lifes;
         updateMultipliers();
     }
@@ -346,7 +387,7 @@ public class GameScreen extends Screen {
             } break;
             case Bomb: {
                 _explosionTicker = EXPLOSION_TIME;
-                Assets.soundExplosion.play(1);
+                Assets.soundExplosion.play(0.7f);
             } break;
             case Skull: {
                 onMiss(null); // hitting a skull counts as a miss
@@ -364,33 +405,27 @@ public class GameScreen extends Screen {
     private void updateMultipliers() {
         if (_streak > 80) {
             _multiplier = 10;
-            _globalSpeedMultiplier = 1.54;
         }
         else if (_streak > 40) {
             _multiplier = 5;
-            _globalSpeedMultiplier = 1.28;
         }
         else if (_streak > 30) {
             _multiplier = 4;
-            _globalSpeedMultiplier = 1.18;
         }
         else if (_streak > 20) {
             _multiplier = 3;
-            _globalSpeedMultiplier = 1.10;
         }
         else if (_streak > 10) {
             _multiplier = 2;
-            _globalSpeedMultiplier = 1.04;
         }
         else {
             _multiplier = 1;
-            _globalSpeedMultiplier = 1.00;
         }
     }
 
     private void spawnBalls() {
         float randFloat = _rand.nextFloat();
-        final int ballY = 0;
+        final int ballY = BALL_INITIAL_Y;
         int ballX = _gameWidth / 3 / 2;
         spawnBall(_ballsLeft, randFloat, ballX, ballY);
 
@@ -421,6 +456,10 @@ public class GameScreen extends Screen {
     }
 
     private void updatePaused(List<TouchEvent> touchEvents) {
+        if (_currentTrack.isPlaying()) {
+            _currentTrack.pause();
+        }
+
         int len = touchEvents.size();
         for (int i = 0; i < len; i++) {
             TouchEvent event = touchEvents.get(i);
@@ -431,6 +470,10 @@ public class GameScreen extends Screen {
     }
 
     private void updateGameOver(List<TouchEvent> touchEvents) {
+        if (!_currentTrack.isStopped()) {
+            _currentTrack.stop();
+        }
+
         int len = touchEvents.size();
         for (int i = 0; i < len; i++) {
             TouchEvent event = touchEvents.get(i);
@@ -461,15 +504,15 @@ public class GameScreen extends Screen {
         g.drawRect(_gameWidth / 3 * 2, 0, _gameWidth / 3 + 1, _gameHeight, Color.argb(_laneHitAlphaRight, 255, 0, 0));
 
         for (Ball b: _ballsLeft) {
-            paintBall(g, b, deltaTime);
+            paintBall(g, b);
         }
 
         for (Ball b: _ballsMiddle) {
-            paintBall(g, b, deltaTime);
+            paintBall(g, b);
         }
 
         for (Ball b: _ballsRight) {
-            paintBall(g, b, deltaTime);
+            paintBall(g, b);
         }
 
 
@@ -493,10 +536,10 @@ public class GameScreen extends Screen {
             drawGameOverUI();
     }
 
-    private void paintBall(Graphics g, Ball b, float deltaTime) {
+    private void paintBall(Graphics g, Ball b) {
         switch(b.type) {
             case Normal:
-                g.drawImage(Assets.ballNormal, b.x - 90, b.y - 90); // TODO deltatime for framerate independent movement(?)
+                g.drawImage(Assets.ballNormal, b.x - 90, b.y - 90);
                 break;
             case OneUp:
                 g.drawImage(Assets.ballOneUp, b.x - 90, b.y - 90);
@@ -531,7 +574,6 @@ public class GameScreen extends Screen {
 
         g.drawARGB(155, 0, 0, 0);
         g.drawString(Integer.toString(_score), 640, 300, _paintText);
-
     }
 
     private void drawRunningUI() {
@@ -564,24 +606,30 @@ public class GameScreen extends Screen {
 
     @Override
     public void pause() {
-        if (state == GameState.Running)
+        if (state == GameState.Running) {
             state = GameState.Paused;
+            _currentTrack.pause();
+        }
 
     }
 
     @Override
     public void resume() {
-        if (state == GameState.Paused)
+        if (state == GameState.Paused) {
             state = GameState.Running;
+            _currentTrack.play();
+        }
     }
 
     @Override
     public void dispose() {
-
+        if(_currentTrack.isPlaying()) {
+            _currentTrack.stop();
+        }
     }
 
     @Override
     public void backButton() {
-        pause();
+        dispose();
     }
 }

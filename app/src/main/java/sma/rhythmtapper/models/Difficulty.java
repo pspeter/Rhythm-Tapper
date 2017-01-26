@@ -2,9 +2,7 @@ package sma.rhythmtapper.models;
 
 import java.io.Serializable;
 
-/**
- * Created by andil on 24.01.2017.
- */
+import sma.rhythmtapper.framework.Music;
 
 public class Difficulty implements Serializable{
 
@@ -12,21 +10,33 @@ public class Difficulty implements Serializable{
     public static final String MED_TAG = "medium";
     public static final String HARD_TAG = "hard";
 
-    private int _spawnInterval;
+
+
+    private String _music;
+    private float _spawnInterval;
     private int _ballSpeed;
     private String _mode;
 
-    public Difficulty(String _mode, int spawnInterval, int ballSpeed) {
+    public Difficulty(String _mode, String music, float bpm, int ballSpeed) {
         this._mode = _mode;
-        this._spawnInterval = spawnInterval;
+        this._music = music;
+        this._spawnInterval = 60 / bpm * 100 / 2;
         this._ballSpeed = ballSpeed;
     }
 
-    public int getSpawnInterval() {
+    public String getMusic() {
+        return _music;
+    }
+
+    public void setMusic(String _music) {
+        this._music = _music;
+    }
+
+    public float getSpawnInterval() {
         return _spawnInterval;
     }
 
-    public void setSpawnInterval(int _spawnInterval) {
+    public void setSpawnInterval(float _spawnInterval) {
         this._spawnInterval = _spawnInterval;
     }
 
