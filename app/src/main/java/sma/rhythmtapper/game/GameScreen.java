@@ -261,8 +261,9 @@ public class GameScreen extends Screen {
                 }
                 else {
                     // pause area
-                    touchEvents.remove(i);
+                    touchEvents.clear();
                     pause();
+                    break;
                 }
             }
         }
@@ -473,6 +474,7 @@ public class GameScreen extends Screen {
             TouchEvent event = touchEvents.get(i);
             if (event.type == TouchEvent.TOUCH_DOWN) {
                 resume();
+                return;
             }
         }
     }
