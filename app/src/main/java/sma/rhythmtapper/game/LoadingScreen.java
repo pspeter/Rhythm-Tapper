@@ -8,9 +8,6 @@ import sma.rhythmtapper.framework.Graphics;
 import sma.rhythmtapper.framework.Screen;
 import sma.rhythmtapper.models.Difficulty;
 
-/**
- * Created by Peter on 23.01.2017.
- */
 
 public class LoadingScreen extends Screen {
     private Difficulty _diff;
@@ -29,7 +26,7 @@ public class LoadingScreen extends Screen {
     public void update(float deltaTime) {
         Graphics g = game.getGraphics();
 
-        Assets.background = g.newImage(IMAGE_PATH + "background_placeholder.jpg", Graphics.ImageFormat.RGB565);
+        Assets.background = g.newImage(IMAGE_PATH + "background.png", Graphics.ImageFormat.RGB565);
         Assets.gameover = g.newImage(IMAGE_PATH + "gameover.png", Graphics.ImageFormat.RGB565);
         Assets.pause = g.newImage(IMAGE_PATH + "pause.png", Graphics.ImageFormat.RGB565);
         Assets.ballNormal = g.newImage(IMAGE_PATH + "ball_placeholder.png", Graphics.ImageFormat.RGB565);
