@@ -37,6 +37,7 @@ public class GameScreen extends Screen {
     private Difficulty _difficulty;
     private int _lifes;
     private Vibrator _vibrator;
+    private boolean _isEnding;
 
     // score
     private int _score;
@@ -48,6 +49,7 @@ public class GameScreen extends Screen {
     private int _doubleMultiplierTicker;
     private int _explosionTicker;
     private float _currentTime;
+    private int _endTicker;
 
     // balls
     private List<Ball> _ballsLeft;
@@ -76,6 +78,8 @@ public class GameScreen extends Screen {
     private Paint _paintText;
 
     // constants
+    // how far the screen should scroll after the track ends
+    private static final int END_TIME = 1800;
     // initial y coordinate of spawned balls
     private static final int BALL_INITIAL_Y = 0;
     // hitbox is the y-range within a ball can be hit by a press in its lane
@@ -113,6 +117,7 @@ public class GameScreen extends Screen {
         _ballsRight = new ArrayList<>();
         _rand = new Random();
         _tick = 0;
+        _endTicker = END_TIME / _difficulty.getBallSpeed();
         _currentTime = 0f;
         _explosionTicker = 0;
         _lifes = 10;
@@ -120,6 +125,7 @@ public class GameScreen extends Screen {
         _laneHitAlphaMiddle = 0;
         _laneHitAlphaRight = 0;
         _currentTrack = Assets.musicTrack;
+        _isEnding = false;
 
         // paint for text
         _paintText = new Paint();
@@ -147,7 +153,7 @@ public class GameScreen extends Screen {
         if (touchEvents.size() > 0) {
             state = GameState.Running; // TODO triggers pause on every game start
             touchEvents.clear();
-            _currentTrack.setLooping(true);
+            _currentTrack.setLooping(false);
             _currentTrack.setVolume(0.3f);
             _currentTrack.play();
         }
@@ -159,9 +165,16 @@ public class GameScreen extends Screen {
 
         // 2. Check miscellaneous events like death:
         checkDeath();
+        checkEnd();
 
         // 3. Individual update() methods.
         updateVariables(deltaTime);
+    }
+
+    private void checkEnd() {
+        if (_currentTrack.isStopped()) {
+            _isEnding = true;
+        }
     }
 
     private void explosion(List<Ball> balls) {
@@ -178,32 +191,36 @@ public class GameScreen extends Screen {
 
     private void checkDeath() {
         if (_lifes <= 0) {
-            state = GameState.GameOver;
-            // update highscore
-            FileIO fileIO = game.getFileIO();
-            SharedPreferences prefs = fileIO.getSharedPref();
-            int oldScore;
+            endGame();
+        }
+    }
 
-            switch(_difficulty.getMode()) {
-                case Difficulty.EASY_TAG:
-                    oldScore = prefs.getInt(Difficulty.EASY_TAG,0);
-                    break;
-                case Difficulty.MED_TAG:
-                    oldScore = prefs.getInt(Difficulty.MED_TAG,0);
-                    break;
-                case Difficulty.HARD_TAG:
-                    oldScore = prefs.getInt(Difficulty.HARD_TAG,0);
-                    break;
-                default:
-                    oldScore = 0;
-                    break;
-            }
+    private void endGame() {
+        state = GameState.GameOver;
+        // update highscore
+        FileIO fileIO = game.getFileIO();
+        SharedPreferences prefs = fileIO.getSharedPref();
+        int oldScore;
 
-            if(_score > oldScore) {
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putInt(_difficulty.getMode(), _score);
-                editor.apply();
-            }
+        switch(_difficulty.getMode()) {
+            case Difficulty.EASY_TAG:
+                oldScore = prefs.getInt(Difficulty.EASY_TAG,0);
+                break;
+            case Difficulty.MED_TAG:
+                oldScore = prefs.getInt(Difficulty.MED_TAG,0);
+                break;
+            case Difficulty.HARD_TAG:
+                oldScore = prefs.getInt(Difficulty.HARD_TAG,0);
+                break;
+            default:
+                oldScore = 0;
+                break;
+        }
+
+        if(_score > oldScore) {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putInt(_difficulty.getMode(), _score);
+            editor.apply();
         }
     }
 
@@ -275,8 +292,7 @@ public class GameScreen extends Screen {
         }
 
         // spawn new balls
-        if (_currentTime % _spawnInterval <= deltatime) {
-            Log.d("spawntimer", "" + _currentTime + " " + _spawnInterval + " " + deltatime);
+        if (!_isEnding && _currentTime % _spawnInterval <= deltatime) {
             spawnBalls();
         }
 
@@ -296,6 +312,14 @@ public class GameScreen extends Screen {
         _doubleMultiplierTicker -= Math.min(1, _doubleMultiplierTicker);
         _explosionTicker -= Math.min(1, _explosionTicker);
         _tick = (_tick + 1) % 100000;
+
+        if (_isEnding) {
+            _endTicker -= Math.min(1, _endTicker);
+
+            if (_endTicker <= 0) {
+                endGame();
+            }
+        }
     }
 
     // remove the balls from an iterator that have fallen through the hitbox
@@ -584,6 +608,7 @@ public class GameScreen extends Screen {
     public void pause() {
         if (state == GameState.Running) {
             state = GameState.Paused;
+            _currentTrack.pause();
         }
 
     }
