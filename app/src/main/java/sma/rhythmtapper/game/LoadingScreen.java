@@ -44,7 +44,7 @@ public class LoadingScreen extends Screen {
         Assets.soundExplosion = game.getAudio().createSound(SOUND_EFFECTS_PATH + "sound_explosion.ogg");
         Assets.soundCreepyLaugh = game.getAudio().createSound(SOUND_EFFECTS_PATH + "sound_creepy_laugh.mp3");
 
-        Assets.musicTrackFast1 = game.getAudio().createMusic(MUSIC_PATH + "Aquaria_Minibadass_OC_ReMix.mp3");
+        Assets.musicTrack = game.getAudio().createMusic(MUSIC_PATH + _diff.getMusic());
 
         game.setScreen(new GameScreen(game, _diff));
     }

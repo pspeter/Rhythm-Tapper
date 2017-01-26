@@ -63,11 +63,11 @@ public class GameScreen extends Screen {
     private float _spawnInterval;
     private int _ballSpeed;
     private final double _spawnChance_normal = 0.26; // TODO dynamic
-    private final double _spawnChance_oneup = _spawnChance_normal + 0.004;
-    private final double _spawnChance_multiplier = _spawnChance_oneup + 0.002;
+    private final double _spawnChance_oneup = _spawnChance_normal + 0.003;
+    private final double _spawnChance_multiplier = _spawnChance_oneup + 0.001;
     private final double _spawnChance_speeder = _spawnChance_multiplier + 0.003;
-    private final double _spawnChance_bomb = _spawnChance_speeder + 0.002;
-    private final double _spawnChance_skull = _spawnChance_bomb + 0.013;
+    private final double _spawnChance_bomb = _spawnChance_speeder + 0.0005;
+    private final double _spawnChance_skull = _spawnChance_bomb + 0.014;
 
     // audio
     private Music _currentTrack;
@@ -119,7 +119,7 @@ public class GameScreen extends Screen {
         _laneHitAlphaLeft = 0;
         _laneHitAlphaMiddle = 0;
         _laneHitAlphaRight = 0;
-        _currentTrack = Assets.musicTrackFast1;
+        _currentTrack = Assets.musicTrack;
 
         // paint for text
         _paintText = new Paint();
@@ -592,7 +592,7 @@ public class GameScreen extends Screen {
     public void resume() {
         if (state == GameState.Paused) {
             state = GameState.Running;
-            Assets.musicTrackFast1.play();
+            _currentTrack.play();
         }
     }
 

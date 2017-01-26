@@ -17,9 +17,12 @@ public class DifficultySelectionActivity extends Activity implements View.OnClic
     private Button btnMid;
     private Button btnHard;
 
-    private final Difficulty _diffEasy = new Difficulty(Difficulty.EASY_TAG, 20, 4);
-    private final Difficulty _diffMid = new Difficulty(Difficulty.MED_TAG, 15, 10);
-    private final Difficulty _diffHard = new Difficulty(Difficulty.HARD_TAG, 16.66666f, 15);
+    private final Difficulty _diffEasy =
+            new Difficulty(Difficulty.EASY_TAG, "Aquaria_Minibadass_OC_ReMix.mp3", 20, 4);
+    private final Difficulty _diffMid =
+            new Difficulty(Difficulty.MED_TAG, "super_meat_boy_power_of_the_meat.mp3", 23.4375f, 10);
+    private final Difficulty _diffHard =
+            new Difficulty(Difficulty.HARD_TAG, "Aquaria_Minibadass_OC_ReMix.mp3", 16.66666f, 15);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
