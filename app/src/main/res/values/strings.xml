@@ -1,19 +1,33 @@
 <resources>
     <string name="app_name">RhythmTapper</string>
-    <string name="main_btn_start">Start Game</string>
+    <string name="main_btn_start">Spiel starten</string>
     <string name="main_btn_highscore">Highscore</string>
     <string name="main_btn_difficulty">Highscore</string>
-    <string name="main_btn_about">About</string>
+    <string name="main_btn_about">Über</string>
     <string name="title_activity_game">GameActivity</string>
-    <string name="diff_btn_save">Save Difficulty</string>
     <string name="diff_radio_easy">Normal</string>
     <string name="diff_radio_mid">Hard</string>
-    <string name="diff_radio_hard">X-Treeeeeeeeeeeeeeme!!11!</string>
+    <string name="diff_radio_hard">X-Treeeeeeeeeeeeeeme!!11elf!</string>
 
-    <string name="highscore_mode">Mode</string>
-    <string name="highscore_score">Score</string>
-    <string name="highscore_date">Date</string>
+    <string name="highscore_mode">Modus</string>
+    <string name="highscore_score">Punkte</string>
+
     <string name="highscore_txt_easy">Normal</string>
     <string name="highscore_txt_mid">Hard</string>
     <string name="highscore_txt_hard">X-Treeeeeeeme</string>
+
+    <string name="about_ball_normal_title">Normal</string>
+    <string name="about_ball_bomb_title">TNT</string>
+    <string name="about_ball_multiplier_title">Multiplier</string>
+    <string name="about_ball_speeder_title">Speedy</string>
+    <string name="about_ball_oneup_title">One up</string>
+    <string name="about_ball_skull_title">Totenschädel</string>
+
+    <string name="about_ball_normal_content">Keine spezielle Fähigkeit, bringt Punkte</string>
+    <string name="about_ball_bomb_content">Zerstört alle kommenden Bälle für eine gewisse Zeit und zählt deren Punkte zum Punktestand.</string>
+    <string name="about_ball_multiplier_content">Verdoppelt den Multiplikator</string>
+    <string name="about_ball_speeder_content">Doppelt so schnell als normale Bälle</string>
+    <string name="about_ball_oneup_content">Erhöht die Anzahl der Leben um 1</string>
+    <string name="about_ball_skull_content">Verringert die Anzahl der Leben um 1</string>
+
 </resources>
