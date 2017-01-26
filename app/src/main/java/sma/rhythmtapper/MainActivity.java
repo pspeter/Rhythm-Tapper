@@ -36,5 +36,14 @@ public class MainActivity extends Activity {
                 MainActivity.this.startActivity(i);
             }
         });
+        this._aboutBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(MainActivity.this, AboutActivity.class);
+                MainActivity.this.startActivity(i);
+            }
+        });
+
+
     }
 }
