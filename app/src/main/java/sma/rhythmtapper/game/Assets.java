@@ -7,6 +7,8 @@ import sma.rhythmtapper.framework.Sound;
 class Assets {
     // Graphics
     static Image background;
+    static Image gameover;
+    static Image pause;
     static Image ballNormal;
     static Image ballMultiplier;
     static Image ballOneUp;
