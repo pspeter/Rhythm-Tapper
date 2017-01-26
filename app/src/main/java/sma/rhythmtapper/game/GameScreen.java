@@ -584,9 +584,6 @@ public class GameScreen extends Screen {
     public void pause() {
         if (state == GameState.Running) {
             state = GameState.Paused;
-            if(_currentTrack.isPlaying()) {
-                _currentTrack.stop();
-            }
         }
 
     }
@@ -601,11 +598,13 @@ public class GameScreen extends Screen {
 
     @Override
     public void dispose() {
-
+        if(_currentTrack.isPlaying()) {
+            _currentTrack.stop();
+        }
     }
 
     @Override
     public void backButton() {
-        pause();
+        dispose();
     }
 }
