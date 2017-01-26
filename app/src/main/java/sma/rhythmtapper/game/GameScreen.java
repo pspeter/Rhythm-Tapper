@@ -601,8 +601,9 @@ public class GameScreen extends Screen {
 
     private void drawPausedUI() {
         Graphics g = game.getGraphics();
-        // Darken the entire screen so you can display the Paused screen.
         g.drawARGB(155, 0, 0, 0);
+        g.drawImage(Assets.pause, 200, 500);
+        g.drawString("TAP TO CONTINUE", 540, 845, _paintGameover);
     }
 
     private void drawGameOverUI() {
