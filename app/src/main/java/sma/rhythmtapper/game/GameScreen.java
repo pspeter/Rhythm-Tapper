@@ -5,11 +5,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.os.Vibrator;
 import android.util.Log;
 
@@ -17,7 +15,6 @@ import sma.rhythmtapper.MainActivity;
 import sma.rhythmtapper.framework.FileIO;
 import sma.rhythmtapper.framework.Game;
 import sma.rhythmtapper.framework.Graphics;
-import sma.rhythmtapper.framework.Input;
 import sma.rhythmtapper.framework.Music;
 import sma.rhythmtapper.framework.Screen;
 import sma.rhythmtapper.framework.Input.TouchEvent;
@@ -26,6 +23,8 @@ import sma.rhythmtapper.models.Difficulty;
 
 public class GameScreen extends Screen {
     private static final String TAG = "GameScreenTag";
+
+
     enum GameState {
         Ready, Running, Paused, GameOver
     }
@@ -43,6 +42,7 @@ public class GameScreen extends Screen {
     private int _score;
     private int _multiplier;
     private int _streak;
+    private int _combo;
 
     // tickers
     private int _tick;
@@ -52,9 +52,11 @@ public class GameScreen extends Screen {
     private int _endTicker;
 
     // balls
-    private List<Ball> _ballsLeft;
-    private List<Ball> _ballsMiddle;
-    private List<Ball> _ballsRight;
+    private List<Ball> _balls1;
+    private List<Ball> _balls2;
+    private List<Ball> _balls3;
+    private List<Ball> _balls4;
+    private List<Ball> _balls5;
 
     // lane miss indicators
     private int _laneHitAlphaLeft;
@@ -113,9 +115,12 @@ public class GameScreen extends Screen {
         _doubleMultiplierTicker = 0;
         _score = 0;
         _streak = 0;
-        _ballsLeft = new ArrayList<>();
-        _ballsMiddle = new ArrayList<>();
-        _ballsRight = new ArrayList<>();
+        _balls1 = new ArrayList<>();
+        _balls2 = new ArrayList<>();
+        _balls3 = new ArrayList<>();
+        _balls4 = new ArrayList<>();
+        _balls5 = new ArrayList<>();
+
         _rand = new Random();
         _tick = 0;
         _endTicker = END_TIME / _difficulty.getBallSpeed();
@@ -241,20 +246,32 @@ public class GameScreen extends Screen {
             if (event.type == TouchEvent.TOUCH_DOWN) {
                 if (event.y > 1500) {
                     // ball hit area
-                    if (event.x < _gameWidth / 3) {
-                        if (!hitLane(_ballsLeft)) {
+                    if (event.x < _gameWidth / 5) {
+                        if (!hitLane(_balls1)) {
                             // if no ball was hit
                             _laneHitAlphaLeft = MISS_FLASH_INITIAL_ALPHA;
                         }
                     }
-                    else if (event.x < _gameWidth / 3 * 2) {
-                        if (!hitLane(_ballsMiddle))
+                    else if (event.x < _gameWidth / 5 * 2) {
+                        if (!hitLane(_balls2)) {
+                            // if no ball was hit
+                            _laneHitAlphaLeft = MISS_FLASH_INITIAL_ALPHA;
+                        }
+                    }
+                    else if (event.x < _gameWidth / 5 * 3) {
+                        if (!hitLane(_balls3))
                         {
                             _laneHitAlphaMiddle = MISS_FLASH_INITIAL_ALPHA;
                         }
                     }
+                    else if (event.x < _gameWidth / 5 * 4) {
+                        if (!hitLane(_balls4)) {
+                            // if no ball was hit
+                            _laneHitAlphaLeft = MISS_FLASH_INITIAL_ALPHA;
+                        }
+                    }
                     else {
-                        if (!hitLane(_ballsRight)) {
+                        if (!hitLane(_balls5)) {
                             _laneHitAlphaRight = MISS_FLASH_INITIAL_ALPHA;
                         }
                     }
@@ -275,28 +292,45 @@ public class GameScreen extends Screen {
         _currentTime += deltatime;
 
         // update ball position
-        for (Ball b: _ballsLeft) {
+        for (Ball b: _balls1) {
             b.update((int) (_ballSpeed * deltatime));
         }
 
-        for (Ball b: _ballsMiddle) {
+        for (Ball b: _balls2) {
             b.update((int) (_ballSpeed * deltatime));
         }
 
-        for (Ball b: _ballsRight) {
+        for (Ball b: _balls3) {
+            b.update((int) (_ballSpeed * deltatime));
+        }
+
+        for (Ball b: _balls4) {
+            b.update((int) (_ballSpeed * deltatime));
+        }
+
+        for (Ball b: _balls5) {
             b.update((int) (_ballSpeed * deltatime));
         }
 
         // remove missed balls
-        if (removeMissed(_ballsLeft.iterator())) {
+        if (removeMissed(_balls1.iterator())) {
             _laneHitAlphaLeft = MISS_FLASH_INITIAL_ALPHA;
         }
 
-        if (removeMissed(_ballsMiddle.iterator())) {
+        if (removeMissed(_balls2.iterator())) {
+            _laneHitAlphaLeft = MISS_FLASH_INITIAL_ALPHA;
+        }
+
+        if (removeMissed(_balls3.iterator())) {
             _laneHitAlphaMiddle = MISS_FLASH_INITIAL_ALPHA;
         }
 
-        if (removeMissed(_ballsRight.iterator())) {
+        if (removeMissed(_balls4.iterator())) {
+            _laneHitAlphaLeft = MISS_FLASH_INITIAL_ALPHA;
+        }
+
+
+        if (removeMissed(_balls5.iterator())) {
             _laneHitAlphaRight = MISS_FLASH_INITIAL_ALPHA;
         }
 
@@ -312,9 +346,11 @@ public class GameScreen extends Screen {
 
         // atom explosion ticker
         if (_explosionTicker > 0) {
-            explosion(_ballsLeft);
-            explosion(_ballsMiddle);
-            explosion(_ballsRight);
+            explosion(_balls1);
+            explosion(_balls2);
+            explosion(_balls3);
+            explosion(_balls4);
+            explosion(_balls5);
         }
 
         // update tickers
@@ -387,6 +423,8 @@ public class GameScreen extends Screen {
     // triggers when a lane gets tapped that currently has a ball in its hitbox
     private void onHit(Ball b) {
         _streak++;
+        ++_lifes;
+        ++_combo;
         switch(b.type) {
             case OneUp: {
                 ++_lifes;
@@ -406,8 +444,8 @@ public class GameScreen extends Screen {
         }
 
         updateMultipliers();
-        _score += 10 * _multiplier
-                * (_doubleMultiplierTicker > 0 ? 2 : 1);
+        _score += 10 * _multiplier*_combo;
+                //* (_doubleMultiplierTicker > 0 ? 2 : 1);
     }
 
     // triggers after a touch event was handled by hitLane()
@@ -435,16 +473,24 @@ public class GameScreen extends Screen {
     private void spawnBalls() {
         float randFloat = _rand.nextFloat();
         final int ballY = BALL_INITIAL_Y;
-        int ballX = _gameWidth / 3 / 2;
-        spawnBall(_ballsLeft, randFloat, ballX, ballY);
+        int ballX = _gameWidth / 5 / 2;
+        spawnBall(_balls1, randFloat, ballX, ballY);
+
+        randFloat = _rand.nextFloat();
+        ballX = _gameWidth / 5 / 2 * 3 ;
+        spawnBall(_balls2,randFloat, ballX, ballY);
 
         randFloat = _rand.nextFloat();
         ballX = _gameWidth / 2;
-        spawnBall(_ballsMiddle, randFloat, ballX, ballY);
+        spawnBall(_balls3, randFloat, ballX, ballY);
 
         randFloat = _rand.nextFloat();
-        ballX = _gameWidth - _gameWidth / 3 / 2;
-        spawnBall(_ballsRight, randFloat, ballX, ballY);
+        ballX =  _gameWidth - _gameWidth / 5 / 2 * 3;
+        spawnBall(_balls4,randFloat, ballX, ballY);
+
+        randFloat = _rand.nextFloat();
+        ballX = _gameWidth - _gameWidth / 5 / 2 ;
+        spawnBall(_balls5, randFloat, ballX, ballY);
 
     }
 
@@ -509,19 +555,29 @@ public class GameScreen extends Screen {
 
         // Example:
         g.drawImage(Assets.background, 0, 0);
-        g.drawRect(0                 , 0, _gameWidth / 3 + 1, _gameHeight, Color.argb(_laneHitAlphaLeft, 255, 0, 0));
-        g.drawRect(_gameWidth / 3    , 0, _gameWidth / 3 + 1, _gameHeight, Color.argb(_laneHitAlphaMiddle, 255, 0, 0));
-        g.drawRect(_gameWidth / 3 * 2, 0, _gameWidth / 3 + 1, _gameHeight, Color.argb(_laneHitAlphaRight, 255, 0, 0));
+        g.drawRect(0                 , 0, _gameWidth / 5 + 1, _gameHeight, Color.argb(_laneHitAlphaLeft, 255, 0, 0));
+        g.drawRect(_gameWidth / 5    , 0, _gameWidth / 5 + 1, _gameHeight, Color.argb(_laneHitAlphaMiddle, 255, 0, 0));
+        g.drawRect(_gameWidth / 5 * 2, 0, _gameWidth / 5 + 1, _gameHeight, Color.argb(_laneHitAlphaRight, 255, 0, 0));
+        g.drawRect(_gameWidth / 5 * 3, 0, _gameWidth / 5 + 1, _gameHeight, Color.argb(_laneHitAlphaRight, 255, 0, 0));
+        g.drawRect(_gameWidth / 5 * 4, 0, _gameWidth / 5 + 1, _gameHeight, Color.argb(_laneHitAlphaRight, 255, 0, 0));
 
-        for (Ball b: _ballsLeft) {
+        for (Ball b: _balls1) {
             paintBall(g, b);
         }
 
-        for (Ball b: _ballsMiddle) {
+        for (Ball b: _balls2) {
             paintBall(g, b);
         }
 
-        for (Ball b: _ballsRight) {
+        for (Ball b: _balls3) {
+            paintBall(g, b);
+        }
+
+        for (Ball b: _balls4) {
+            paintBall(g, b);
+        }
+
+        for (Ball b: _balls5) {
             paintBall(g, b);
         }
 
