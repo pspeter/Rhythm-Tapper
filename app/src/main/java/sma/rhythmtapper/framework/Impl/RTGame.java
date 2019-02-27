@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
@@ -29,6 +30,20 @@ public class RTGame extends Activity implements Game {
     Screen screen;
     PowerManager.WakeLock wakeLock;
 
+    Point screensize=new Point();
+
+    @Override
+    public int getScreenX()
+    {
+        return  screensize.x;
+    }
+
+    @Override
+    public int getScreenY()
+    {
+        return  screensize.y;
+    }
+
     @Override
     public void goToActivity(Class<?> activity) {
         Intent i = new Intent(this, activity);
@@ -47,15 +62,17 @@ public class RTGame extends Activity implements Game {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         boolean isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
-        int frameBufferWidth = 1080;
-        int frameBufferHeight = 1920;
+        //Point size=new Point();
+        getWindowManager().getDefaultDisplay().getSize(screensize);
+        int frameBufferWidth = screensize.x;//1080;
+        int frameBufferHeight = screensize.y;//1920;
         Bitmap frameBuffer = Bitmap.createBitmap(frameBufferWidth,
                 frameBufferHeight, Bitmap.Config.RGB_565);
 
         float scaleX = (float) frameBufferWidth
-                / getWindowManager().getDefaultDisplay().getWidth();
+                / screensize.x;
         float scaleY = (float) frameBufferHeight
-                / getWindowManager().getDefaultDisplay().getHeight();
+                / screensize.y;
 
         renderView = new RTFastRenderView(this, frameBuffer);
         graphics = new RTGraphics(getAssets(), frameBuffer);

@@ -59,9 +59,11 @@ public class GameScreen extends Screen {
     private List<Ball> _balls5;
 
     // lane miss indicators
-    private int _laneHitAlphaLeft;
-    private int _laneHitAlphaMiddle;
-    private int _laneHitAlphaRight;
+    private int _laneHitAlpha1;
+    private int _laneHitAlpha2;
+    private int _laneHitAlpha3;
+    private int _laneHitAlpha4;
+    private int _laneHitAlpha5;
 
     // difficulty params
     private float _spawnInterval;
@@ -86,11 +88,11 @@ public class GameScreen extends Screen {
     // initial y coordinate of spawned balls
     private static final int BALL_INITIAL_Y = -50;
     // hitbox is the y-range within a ball can be hit by a press in its lane
-    private static final int HITBOX_CENTER = 1760;
-    private static final int HITBOX_HEIGHT = 280;
+    private static  int HITBOX_CENTER = 1760;
+    private static  int HITBOX_HEIGHT = 280;
     // if no ball is in the hitbox when pressed, remove the lowest ball in the
     // miss zone right above the hitbox (it still counts as a miss)
-    private static final int MISS_ZONE_HEIGHT = 150;
+    private static  int MISS_ZONE_HEIGHT = 150;
     private static final int MISS_FLASH_INITIAL_ALPHA = 240;
     private static final int DOUBLE_MULTIPLIER_TIME = 600;
     // explosion
@@ -127,9 +129,11 @@ public class GameScreen extends Screen {
         _currentTime = 0f;
         _explosionTicker = 0;
         _lifes = 10;
-        _laneHitAlphaLeft = 0;
-        _laneHitAlphaMiddle = 0;
-        _laneHitAlphaRight = 0;
+        _laneHitAlpha1 = 0;
+        _laneHitAlpha2 = 0;
+        _laneHitAlpha3 = 0;
+        _laneHitAlpha4 = 0;
+        _laneHitAlpha5 = 0;
         _currentTrack = Assets.musicTrack;
         _isEnding = false;
 
@@ -146,6 +150,8 @@ public class GameScreen extends Screen {
         _paintGameover.setTextAlign(Paint.Align.CENTER);
         _paintGameover.setAntiAlias(true);
         _paintGameover.setColor(Color.BLACK);
+
+        HITBOX_CENTER= game.getScreenY()-HITBOX_HEIGHT;
     }
 
     @Override
@@ -244,35 +250,35 @@ public class GameScreen extends Screen {
             TouchEvent event = touchEvents.get(i);
 
             if (event.type == TouchEvent.TOUCH_DOWN) {
-                if (event.y > 1500) {
+                if (event.y > game.getScreenY()*0.5f) {
                     // ball hit area
                     if (event.x < _gameWidth / 5) {
                         if (!hitLane(_balls1)) {
                             // if no ball was hit
-                            _laneHitAlphaLeft = MISS_FLASH_INITIAL_ALPHA;
+                            _laneHitAlpha1 = MISS_FLASH_INITIAL_ALPHA;
                         }
                     }
                     else if (event.x < _gameWidth / 5 * 2) {
                         if (!hitLane(_balls2)) {
                             // if no ball was hit
-                            _laneHitAlphaLeft = MISS_FLASH_INITIAL_ALPHA;
+                            _laneHitAlpha2 = MISS_FLASH_INITIAL_ALPHA;
                         }
                     }
                     else if (event.x < _gameWidth / 5 * 3) {
                         if (!hitLane(_balls3))
                         {
-                            _laneHitAlphaMiddle = MISS_FLASH_INITIAL_ALPHA;
+                            _laneHitAlpha3 = MISS_FLASH_INITIAL_ALPHA;
                         }
                     }
                     else if (event.x < _gameWidth / 5 * 4) {
                         if (!hitLane(_balls4)) {
                             // if no ball was hit
-                            _laneHitAlphaLeft = MISS_FLASH_INITIAL_ALPHA;
+                            _laneHitAlpha4 = MISS_FLASH_INITIAL_ALPHA;
                         }
                     }
                     else {
                         if (!hitLane(_balls5)) {
-                            _laneHitAlphaRight = MISS_FLASH_INITIAL_ALPHA;
+                            _laneHitAlpha5 = MISS_FLASH_INITIAL_ALPHA;
                         }
                     }
                 }
@@ -314,24 +320,24 @@ public class GameScreen extends Screen {
 
         // remove missed balls
         if (removeMissed(_balls1.iterator())) {
-            _laneHitAlphaLeft = MISS_FLASH_INITIAL_ALPHA;
+            _laneHitAlpha1 = MISS_FLASH_INITIAL_ALPHA;
         }
 
         if (removeMissed(_balls2.iterator())) {
-            _laneHitAlphaLeft = MISS_FLASH_INITIAL_ALPHA;
+            _laneHitAlpha2 = MISS_FLASH_INITIAL_ALPHA;
         }
 
         if (removeMissed(_balls3.iterator())) {
-            _laneHitAlphaMiddle = MISS_FLASH_INITIAL_ALPHA;
+            _laneHitAlpha3 = MISS_FLASH_INITIAL_ALPHA;
         }
 
         if (removeMissed(_balls4.iterator())) {
-            _laneHitAlphaLeft = MISS_FLASH_INITIAL_ALPHA;
+            _laneHitAlpha4 = MISS_FLASH_INITIAL_ALPHA;
         }
 
 
         if (removeMissed(_balls5.iterator())) {
-            _laneHitAlphaRight = MISS_FLASH_INITIAL_ALPHA;
+            _laneHitAlpha5 = MISS_FLASH_INITIAL_ALPHA;
         }
 
         // spawn new balls
@@ -340,9 +346,11 @@ public class GameScreen extends Screen {
         }
 
         // decrease miss flash intensities
-        _laneHitAlphaLeft -= Math.min(_laneHitAlphaLeft, 10);
-        _laneHitAlphaMiddle -= Math.min(_laneHitAlphaMiddle, 10);
-        _laneHitAlphaRight -= Math.min(_laneHitAlphaRight, 10);
+        _laneHitAlpha1 -= Math.min(_laneHitAlpha1, 10);
+        _laneHitAlpha2 -= Math.min(_laneHitAlpha2, 10);
+        _laneHitAlpha3 -= Math.min(_laneHitAlpha3, 10);
+        _laneHitAlpha4 -= Math.min(_laneHitAlpha4, 10);
+        _laneHitAlpha5 -= Math.min(_laneHitAlpha5, 10);
 
         // atom explosion ticker
         if (_explosionTicker > 0) {
@@ -414,9 +422,10 @@ public class GameScreen extends Screen {
         }
         _vibrator.vibrate(100);
         _streak = 0;
+        _combo=0;
         _score -= Math.min(_score, 50);
         _multiplier = 1;
-        --_lifes;
+        //--_lifes;
         updateMultipliers();
     }
 
@@ -555,11 +564,18 @@ public class GameScreen extends Screen {
 
         // Example:
         g.drawImage(Assets.background, 0, 0);
-        g.drawRect(0                 , 0, _gameWidth / 5 + 1, _gameHeight, Color.argb(_laneHitAlphaLeft, 255, 0, 0));
-        g.drawRect(_gameWidth / 5    , 0, _gameWidth / 5 + 1, _gameHeight, Color.argb(_laneHitAlphaMiddle, 255, 0, 0));
-        g.drawRect(_gameWidth / 5 * 2, 0, _gameWidth / 5 + 1, _gameHeight, Color.argb(_laneHitAlphaRight, 255, 0, 0));
-        g.drawRect(_gameWidth / 5 * 3, 0, _gameWidth / 5 + 1, _gameHeight, Color.argb(_laneHitAlphaRight, 255, 0, 0));
-        g.drawRect(_gameWidth / 5 * 4, 0, _gameWidth / 5 + 1, _gameHeight, Color.argb(_laneHitAlphaRight, 255, 0, 0));
+        g.drawRect(0                 , 0, _gameWidth / 5 + 1, _gameHeight, Color.argb(_laneHitAlpha1, 255, 0, 0));
+        g.drawRect(_gameWidth / 5    , 0, _gameWidth / 5 + 1, _gameHeight, Color.argb(_laneHitAlpha2, 255, 0, 0));
+        g.drawRect(_gameWidth / 5 * 2, 0, _gameWidth / 5 + 1, _gameHeight, Color.argb(_laneHitAlpha3, 255, 0, 0));
+        g.drawRect(_gameWidth / 5 * 3, 0, _gameWidth / 5 + 1, _gameHeight, Color.argb(_laneHitAlpha4, 255, 0, 0));
+        g.drawRect(_gameWidth / 5 * 4, 0, _gameWidth / 5 + 1, _gameHeight, Color.argb(_laneHitAlpha5, 255, 0, 0));
+
+        final int dx=_gameWidth / 10;
+        for(int i=0;i<5;i++)
+        {
+            int n=2*i+1;
+            g.drawImage(Assets.ballHitpoint, dx*n-90, HITBOX_CENTER);
+        }
 
         for (Ball b: _balls1) {
             paintBall(g, b);

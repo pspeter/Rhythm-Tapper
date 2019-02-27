@@ -23,5 +23,9 @@ public interface Game {
 
     public Screen getInitScreen();
 
+    public int getScreenX();
+
+    public int getScreenY();
+
     public void goToActivity(Class<?> activity);
 }
